@@ -1,0 +1,49 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Mastra (TypeScript agent framework) + Astro 5 + DaisyUI + Tailwind CSS v4
+  Architecture: Agent swarm (Orchestrator + Scout/Forge/Deployer/Maintainer sub-agents)
+  UI Strategy: Hybrid — DaisyUI themes + seed templates per business type
+  Deploy: GitHub Pages (static, $0). CI: GitHub Actions
+  Backend: Supabase free tier (leads, tenants, task queue). No component configs in DB.
+  LLM: Provider-agnostic via Mastra — free default (Ollama/NIM), paid boost (Claude/OpenAI)
+  Org: delusion-al-org. Team: Diego + Miguel.
+
+strict_tdd: false  # Will enable once Vitest is configured
+
+testing:
+  runner: { available: false, note: "New project — Vitest to be added in first change" }
+  layers:
+    unit: { available: false }
+    integration: { available: false }
+    e2e: { available: false }
+  coverage: { available: false }
+  quality:
+    linter: { available: false, note: "ESLint to be added" }
+    type_checker: { available: false, note: "tsc --noEmit once tsconfig exists" }
+    formatter: { available: false, note: "Prettier to be added" }
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+    - Consider cost impact (free tier vs paid providers)
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Justify provider choices with cost analysis
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Use DaisyUI classes over custom CSS wherever possible
+  verify:
+    - Run type checker as minimum validation
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas
