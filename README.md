@@ -64,6 +64,16 @@ bun run dev                 # Starts Astro dev server on :4321
 bun run build               # Builds static site to seeds/restaurant/dist/
 ```
 
+## Engram Context (Agent Memory)
+
+This project uses Engram to share AI context across the team. When starting a new branch or pulling updates, sync the agent memory:
+
+```bash
+engram sync --import
+```
+
+This ensures your local agent knows about architectural decisions, bug fixes, and project state.
+
 ## Docker
 
 Build context is the **monorepo root**:

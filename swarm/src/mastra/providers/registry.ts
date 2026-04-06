@@ -1,7 +1,8 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+// Using any as ai-sdk-provider 3 removed LanguageModelV1
+export type LanguageModelV1 = any;
 
 export type Tier = 'free' | 'mid' | 'boost' | 'premium';
 
