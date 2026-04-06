@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HeroSection from '@delusion/blocks/components/HeroSection.astro';
+import MenuSection from '@delusion/blocks/components/MenuSection.astro';
+import ContactSection from '@delusion/blocks/components/ContactSection.astro';
+
+const menuItems = [
+  { name: 'Margherita Pizza', description: 'Fresh tomato, mozzarella, basil', price: '$14' },
+  { name: 'Pasta Carbonara', description: 'Egg, pecorino, guanciale, black pepper', price: '$16' },
+  { name: 'Tiramisu', description: 'Classic Italian dessert', price: '$8' },
+];
+---
+<Layout title="La Cucina — Fine Italian Dining">
+  <HeroSection
+    title="La Cucina"
+    subtitle="Authentic Italian cuisine in the heart of the city"
+    ctaLabel="Book a Table"
+    ctaHref="/contact"
+  />
+  <MenuSection title="Our Menu" items={menuItems} />
+  <ContactSection
+    title="Find Us"
+    address="123 Main Street, Buenos Aires"
+    phone="+54 11 1234-5678"
+    email="hola@lacucina.ar"
+  />
+</Layout>

@@ -1,0 +1,13 @@
+---
+import type { HeroSectionProps } from './HeroSection.types';
+const { title, subtitle, ctaLabel, ctaHref }: HeroSectionProps = Astro.props;
+---
+<section class="hero min-h-[60vh] bg-base-200">
+  <div class="hero-content text-center">
+    <div class="max-w-md">
+      <h1 class="text-5xl font-bold">{title}</h1>
+      {subtitle && <p class="py-6">{subtitle}</p>}
+      <a href={ctaHref} class="btn btn-primary">{ctaLabel}</a>
+    </div>
+  </div>
+</section>

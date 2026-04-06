@@ -1,0 +1,10 @@
+services:
+  swarm:
+    build:
+      context: ../
+      dockerfile: swarm/Dockerfile
+    ports:
+      - "4111:4111"
+    env_file:
+      - .env
+    restart: unless-stopped

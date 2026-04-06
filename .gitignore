@@ -1,8 +1,10 @@
 node_modules/
+.mastra/
 dist/
+.astro/
+*.env
+*.env.local
 .env
-.env.*
-!.env.example
+.env.local
 *.log
 .DS_Store
-.astro/
