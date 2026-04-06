@@ -14,30 +14,82 @@ ORCHESTRATOR (plans + coordinates)
 
 Built with [Mastra](https://mastra.ai) (TypeScript agent framework), provider-agnostic LLM support, and a tiered model system that runs **free by default**.
 
+## Monorepo Structure
+
+This repo is a Bun workspace monorepo:
+
+```
+delusion-swarm/
+├── swarm/                  # Mastra agent swarm (AI backend)
+│   ├── src/
+│   │   └── mastra/
+│   │       ├── agents/     # Orchestrator, Scout, Forge, Deployer...
+│   │       ├── providers/  # Tier-based LLM provider registry
+│   │       └── tools/      # Shared tools: file I/O, bash, git
+│   ├── Dockerfile
+│   └── docker-compose.yml
+│
+├── packages/
+│   └── blocks/             # @delusion/blocks — shared Astro UI components
+│       └── src/
+│           └── components/ # HeroSection, MenuSection, ContactSection...
+│
+├── seeds/
+│   └── restaurant/         # Reference seed — static Astro site (DaisyUI v5)
+│
+├── scripts/
+│   └── publish-seed.ts     # Publishes a seed to its own standalone repo
+│
+└── openspec/               # SDD planning artifacts
+```
+
 ## Quick Start
 
 ```bash
-# Install dependencies
+# Clone the repo
+git clone git@github.com:delusion-al-org/delusion-swarm.git
+cd delusion-swarm
+
+# Install all workspace dependencies from the monorepo root
 bun install
 
-# Copy env file and configure your keys
-cp env.example .env
+# --- Swarm (AI backend) ---
+cd swarm
+cp .env.example .env        # Fill in your API keys
+bun run dev                 # Starts Mastra dev server on :4111
 
-# Start the dev server
-bun dev
-
-# Or run the demo
-bun src/index.ts
+# --- Seed (Astro site preview) ---
+cd seeds/restaurant
+bun run dev                 # Starts Astro dev server on :4321
+bun run build               # Builds static site to seeds/restaurant/dist/
 ```
 
 ## Docker
 
-```bash
-# Local
-docker compose up
+Build context is the **monorepo root**:
 
-# Coolify / VPS
-# Point Coolify to this repo — it auto-detects the Dockerfile
+```bash
+# From the repo root:
+docker build -f swarm/Dockerfile -t delusion-swarm .
+
+# Or via docker-compose (from swarm/):
+cd swarm
+docker compose up
+```
+
+## Publishing a Seed
+
+The `publish-seed` script resolves `workspace:*` dependencies to pinned versions and pushes the seed to its own standalone repo:
+
+```bash
+# Dry run (no push — inspect the temp dir)
+bun scripts/publish-seed.ts restaurant --dry-run
+
+# Publish to git@github.com:delusion-al-org/seed-restaurant.git
+bun scripts/publish-seed.ts restaurant
+
+# Force push + tag
+bun scripts/publish-seed.ts restaurant --force --tag 0.2.0
 ```
 
 ## LLM Provider Strategy
@@ -56,37 +108,22 @@ ORCHESTRATOR_MODELS=openrouter/google/gemma-2-27b-it:free,ollama/gemma2:9b
 FORGE_MODELS=openrouter/anthropic/claude-sonnet,ollama/gemma2:9b
 ```
 
-## Project Structure
-
-```
-src/
-  index.ts                      # Demo entry point
-  mastra/
-    index.ts                    # Mastra instance + server config
-    agents/
-      orchestrator.ts           # Supervisor agent (delegates to sub-agents)
-      echo.ts                   # Test stub agent
-    providers/
-      registry.ts               # Tier-based model resolution + fallback chains
-    tools/
-      base/                     # Shared tools: file I/O, bash, git
-    workflows/                  # Future: deterministic pipelines
-openspec/                       # SDD planning artifacts
-```
-
 ## Status
 
-**Phase**: Foundation (factory-daemon-core)
+**Phase**: Monorepo + Seed System (seed-system)
 
 - [x] Project scaffold (bun + Mastra + TypeScript)
 - [x] Provider registry with model chains
 - [x] Base tools (file read/write/edit, bash, git)
 - [x] Orchestrator + echo agent
 - [x] Docker + docker-compose
+- [x] Bun monorepo restructure (swarm + packages + seeds)
+- [x] `@delusion/blocks` — shared Astro UI components
+- [x] `seeds/restaurant` — reference seed (DaisyUI v5 + Tailwind v4)
+- [x] `publish-seed.ts` — seed publish pipeline
 - [ ] Scout agent (lead discovery)
-- [ ] Forge agent (site generation)
+- [ ] Forge agent (site generation from seeds)
 - [ ] Deployer agent (GitHub Pages CI)
-- [ ] Seed templates (DaisyUI + Astro)
 - [ ] Admin panel
 
 ## Team
