@@ -5,12 +5,14 @@ import { forgeAgent } from './agents/forge';
 import { plannerAgent } from './agents/planner';
 import { coderAgent } from './agents/coder';
 import { reviewerAgent } from './agents/reviewer';
+import { maintainerWorkflow } from './workflows/maintainer';
 import { getConfiguredProviders } from './providers/registry';
 
 const startTime = Date.now();
 
 export const mastra = new Mastra({
   agents: { orchestrator, forge: forgeAgent, planner: plannerAgent, coder: coderAgent, reviewer: reviewerAgent },
+  workflows: { maintainerWorkflow },
   server: {
     port: Number(process.env.PORT) || 4111,
     apiRoutes: [

@@ -21,6 +21,15 @@ export const multiReplace = createTool({
     const { TargetFile, ReplacementChunks } = context;
     const absolutePath = path.resolve(process.cwd(), TargetFile);
     
+    // ==========================================
+    // 🛡️ SECURITY LAYER: THE SANDBOX
+    // Agents are strictly forbidden from modifying the Swarm Core 
+    // or escaping the designated workspace.
+    // ==========================================
+    if (absolutePath.includes('src/mastra') || absolutePath.includes('openspec/')) {
+       return { error: `SECURITY BREACH DETECTED: Illegal attempt to modify the Swarm Core (${TargetFile}). Agents may only edit assigned client workspace files.` };
+    }
+    
     try {
       let content = await fs.readFile(absolutePath, 'utf-8');
       
