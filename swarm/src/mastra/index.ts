@@ -1,12 +1,16 @@
 import { Mastra } from '@mastra/core/mastra';
 import type { Context } from 'hono';
 import { orchestrator } from './agents/orchestrator';
+import { forgeAgent } from './agents/forge';
+import { plannerAgent } from './agents/planner';
+import { coderAgent } from './agents/coder';
+import { reviewerAgent } from './agents/reviewer';
 import { getConfiguredProviders } from './providers/registry';
 
 const startTime = Date.now();
 
 export const mastra = new Mastra({
-  agents: { orchestrator },
+  agents: { orchestrator, forge: forgeAgent, planner: plannerAgent, coder: coderAgent, reviewer: reviewerAgent },
   server: {
     port: Number(process.env.PORT) || 4111,
     apiRoutes: [

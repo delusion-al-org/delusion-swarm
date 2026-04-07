@@ -6,6 +6,70 @@ export type LanguageModelV1 = any;
 
 export type Tier = 'free' | 'mid' | 'boost' | 'premium';
 
+/**
+ * CostMode controls the global cost ceiling for the swarm.
+ * - zero-cost: Everything runs on free tier (Ollama/OpenRouter free models)
+ * - balanced:  Forge/Scout/Deployer use free, Maintainer uses boost
+ * - quality:   All agents use boost/premium (for important clients)
+ */
+export type CostMode = 'zero-cost' | 'balanced' | 'quality';
+
+/** Agent roles for tier clamping */
+type AgentRole = 'orchestrator' | 'scout' | 'forge' | 'deployer' | 'maintainer' | string;
+
+/** Maximum tier per agent role per cost mode */
+const COST_MODE_CAPS: Record<CostMode, Record<string, Tier>> = {
+  'zero-cost': {
+    orchestrator: 'free',
+    scout: 'free',
+    forge: 'free',
+    deployer: 'free',
+    maintainer: 'free',
+    _default: 'free',
+  },
+  balanced: {
+    orchestrator: 'mid',
+    scout: 'free',
+    forge: 'mid',
+    deployer: 'free',
+    maintainer: 'boost',
+    _default: 'mid',
+  },
+  quality: {
+    orchestrator: 'boost',
+    scout: 'mid',
+    forge: 'boost',
+    deployer: 'free',
+    maintainer: 'premium',
+    _default: 'boost',
+  },
+};
+
+const TIER_ORDER: Tier[] = ['free', 'mid', 'boost', 'premium'];
+
+/**
+ * Get the current cost mode from environment.
+ */
+export function getCostMode(): CostMode {
+  const mode = process.env.COST_MODE as CostMode | undefined;
+  if (mode && ['zero-cost', 'balanced', 'quality'].includes(mode)) return mode;
+  return 'zero-cost'; // Default: free operation
+}
+
+/**
+ * Clamp a requested tier to the maximum allowed by the current cost mode.
+ */
+export function clampTier(requestedTier: Tier, agentRole: AgentRole): Tier {
+  const mode = getCostMode();
+  const caps = COST_MODE_CAPS[mode];
+  const maxTier = caps[agentRole] ?? caps._default;
+
+  const requestedIdx = TIER_ORDER.indexOf(requestedTier);
+  const maxIdx = TIER_ORDER.indexOf(maxTier);
+
+  return requestedIdx <= maxIdx ? requestedTier : maxTier;
+}
+
 export class ProviderNotConfiguredError extends Error {
   constructor(tier: Tier, missingVar: string) {
     super(
@@ -95,6 +159,9 @@ export function getModel(tier: Tier): LanguageModelV1 {
  * Falls back to the given default tier if no env var is set.
  */
 export function getModelChain(agentName: string, defaultTier: Tier = 'free'): LanguageModelV1 {
+  // Apply cost mode clamping to the default tier
+  const clampedTier = clampTier(defaultTier, agentName as AgentRole);
+
   const envKey = `${agentName.toUpperCase()}_MODELS`;
   const envValue = process.env[envKey];
 
@@ -113,7 +180,7 @@ export function getModelChain(agentName: string, defaultTier: Tier = 'free'): La
     }
   }
 
-  return getModel(defaultTier);
+  return getModel(clampedTier);
 }
 
 /**
