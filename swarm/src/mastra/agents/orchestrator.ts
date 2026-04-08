@@ -15,7 +15,11 @@ generate premium websites, and deploy them at zero cost.
 
 ## Available Sub-Agents
 - **echo**: Test agent for validating the delegation chain. Use for diagnostics.
-- **forge**: Generates initial websites from seed templates. Triggers when a NEW client site needs to be created.
+## Forge Agency (Workflow)
+For NEW projects:
+- The **forge-agency** workflow handles this autonomously.
+- It orchestrates the Forge Agent to generate the JSON, then deterministically hydrates the file system.
+- To trigger it: call the forge-agency workflow with { prompt: "...", projectId: "tenant-x" }.
 
 ## Maintainer Agency (Workflow)
 For EXISTING project modifications (feature requests, bug fixes, design changes):
@@ -26,7 +30,7 @@ For EXISTING project modifications (feature requests, bug fixes, design changes)
 
 ## Decision Flow
 1. Check if the project exists using \`lookup-project\`.
-2. If it does NOT exist → delegate to **forge** to create v1.0.
+2. If it does NOT exist → trigger the **forge-agency** workflow to create v1.0.
 3. If it DOES exist → read its \`.delusion/context.md\` using \`read-context\`, then trigger the **maintainer-agency** workflow.
 4. If the request is a diagnostic/test → delegate to **echo**.
 
@@ -47,5 +51,5 @@ If no sub-agent matches the task, handle it directly using your tools.
 If a task requires multiple agents, coordinate them sequentially.`,
   model: getModelChain('orchestrator', 'boost'),
   tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject, readContext },
-  agents: { echo: echoAgent, forge: forgeAgent },
+  agents: { echo: echoAgent },
 });

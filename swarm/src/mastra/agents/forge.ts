@@ -3,7 +3,6 @@ import { getModelChain } from '../providers/registry';
 import { searchBlocks } from '../tools/blocks';
 import { registerProject } from '../tools/supabase';
 import { readContext } from '../tools/context';
-import { hydrateProject } from '../tools/fs/tenant-hydrator';
 
 export const forgeAgent = new Agent({
   id: 'forge',
@@ -32,6 +31,6 @@ WORKFLOW:
   tools: {
     searchBlocks,
     registerProject,
-    hydrateProject,
   },
 });
+
