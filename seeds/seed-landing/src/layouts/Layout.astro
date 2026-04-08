@@ -4,23 +4,23 @@ import { SEO } from 'astro-seo';
 import '../styles/global.css';
 
 const business = await getEntry('business', 'delusion');
-const { site, seo } = business.data;
+const { site_name, site_description, seo, theme } = business.data;
 
 interface Props {
   title?: string;
   description?: string;
 }
 
-const { title = site.title, description = site.description } = Astro.props;
+const { title = site_name, description = site_description } = Astro.props;
 ---
 <!doctype html>
-<html lang="es" data-theme="light">
+<html lang="es" data-theme={theme.preset}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <SEO
       title={title}
-      description={description}
+      description={description || ''}
       noindex={seo.noindex}
       openGraph={{
         basic: {

@@ -1,3 +1,0 @@
-@import "tailwindcss";
-@plugin "daisyui";
-@source "../../packages/blocks/src/**/*.astro";
