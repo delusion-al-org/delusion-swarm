@@ -28,8 +28,17 @@ export const hydrateProject = createTool({
         throw new Error('Security Error: Target directory escapes AGENT_WORKSPACE');
       }
 
-      // 2. Clone the meta-seed
-      await fs.cp(seedDir, targetDir, { recursive: true });
+      // 2. Clone the meta-seed ONLY if it doesn't exist
+      try {
+        await fs.stat(targetDir);
+        console.log(`[Hydrator] Tenant ${projectId} already exists. Skipping seed clone to protect custom code.`);
+      } catch (e: any) {
+        if (e.code === 'ENOENT') {
+          await fs.cp(seedDir, targetDir, { recursive: true });
+        } else {
+          throw e; // Reraise if it's a permission error, etc.
+        }
+      }
 
       // 3. Ensure content/business directory exists
       const contentDir = path.join(targetDir, 'src/content/business');

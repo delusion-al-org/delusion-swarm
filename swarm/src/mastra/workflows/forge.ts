@@ -49,9 +49,13 @@ const hydrateWorkspaceStep = createStep({
   outputSchema: z.object({
     status: z.string(),
     path: z.string(),
+    requiresMaintainer: z.boolean(),
   }),
   execute: async ({ context }) => {
     console.log(`[ForgeWorkflow] Hydrating workspace for ${context.projectId}`);
+    
+    // Check if Forge spawned any custom_sections
+    const hasCustomSections = Array.isArray(context.config?.custom_sections) && context.config.custom_sections.length > 0;
     
     // We call the logic of the tool deterministically
     const result = await hydrateProject.execute({ 
@@ -65,7 +69,11 @@ const hydrateWorkspaceStep = createStep({
       throw new Error(result.message);
     }
 
-    return { status: 'success', path: result.path || '' };
+    return { 
+      status: 'success', 
+      path: result.path || '',
+      requiresMaintainer: hasCustomSections
+    };
   },
 });
 

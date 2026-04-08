@@ -20,6 +20,7 @@ For NEW projects:
 - The **forge-agency** workflow handles this autonomously.
 - It orchestrates the Forge Agent to generate the JSON, then deterministically hydrates the file system.
 - To trigger it: call the forge-agency workflow with { prompt: "...", projectId: "tenant-x" }.
+- **IMPORTANT**: If forge-agency returns `requiresMaintainer: true`, you MUST immediately trigger the **maintainer-agency** workflow to fulfill the newly defined `custom_sections`.
 
 ## Maintainer Agency (Workflow)
 For EXISTING project modifications (feature requests, bug fixes, design changes):

@@ -29,19 +29,23 @@ We will unify the Delusion Swarm by combining a Mastra-powered agent runtime (Fo
 ```text
 [Client Update Event] ──→ [Supabase Tenant Registry]
                                 │
-                                │ (Webhook trigger via Edge Function)
+                                │ (Webhook trigger: Fire-and-Forget)
                                 ▼
                       [Mastra Orchestrator]
                       /                  \
               [New Tenant?]         [Custom Feature Request?]
                    /                         \
-            [Forge Agent]               [Maintainer Workflow]
+         [Forge Workflow]               [Maintainer Workflow]
                    │                         │
-           (Writes delusion.json)      (Planner -> Coder -> Judge B)
+      (generateConfigStep JS)     (Planner -> Coder -> Judge B)
                    │                         │
                    ▼                         ▼
-         [Ejected Tenant Repo (GitHub)] <── (Librarian PRs core improvements!)
+      (hydrateWorkspaceStep fs) <── (Librarian PRs core improvements!)
                    │
+                   ▼
+     (requiresMaintainer? ──→ chained Maintainer Workflow)
+                   │
+                   ▼
            (Astro Build Phase)
                    ▼
           [GitHub Pages Deploy]
@@ -51,11 +55,11 @@ We will unify the Delusion Swarm by combining a Mastra-powered agent runtime (Fo
 
 | File | Action | Description |
 |------|--------|-------------|
-| `supabase/functions/webhook-mastra/index.ts` | Create | Edge function to capture tenant events and call Mastra endpoints |
+| `supabase/functions/webhook-mastra/index.ts` | Create | Edge function to capture tenant events and call Mastra endpoints (Fire-and-Forget port mapping) |
 | `swarm/src/mastra/workflows/maintainer.ts` | Create | The parallel agency workflow (Planner, Coder, Judge) |
-| `swarm/src/mastra/agents/forge.ts` | Create | The JSON builder model loaded with the seed's Zod schema |
-| `seeds/restaurant/src/content/config.ts` | Modify | Define the exact Zod schema that Forge must output |
-| `seeds/restaurant/src/layouts/BaseLayout.astro` | Modify | Ensure base layout dynamically loops components based on `delusion.json` and injects `astro-seo` |
+| `swarm/src/mastra/workflows/forge.ts` | Modify | Separates Forge logic into LLM generation step and Deterministic Hydration step (`tenant-hydrator.ts`) |
+| `seeds/seed-landing/src/content/config.ts` | Modify | Define the exact Zod schema that Forge must output |
+| `seeds/seed-landing/src/layouts/Layout.astro` | Modify | Ensure base layout dynamically loops components based on `delusion.json` and injects `astro-seo` |
 
 ## Interfaces / Contracts
 

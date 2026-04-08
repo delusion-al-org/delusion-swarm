@@ -49,8 +49,9 @@ serve(async (req: Request) => {
 
     console.log(\`Dispatching prompt to Orchestrator: \${prompt}\`);
 
-    // Call Mastra's native agent generate endpoint
-    const mastraResponse = await fetch(\`\${MASTRA_API_URL}/api/agents/orchestrator/generate\`, {
+    // Call Mastra's native agent generate endpoint in background (Fire-and-Forget)
+    // We do NOT await this because Mastra LLM generation takes 20-40s and this endpoint timeouts.
+    fetch(\`\${MASTRA_API_URL}/api/agents/orchestrator/generate\`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,19 +59,11 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }]
       }),
-    });
-
-    if (!mastraResponse.ok) {
-      const errorText = await mastraResponse.text();
-      console.error('Failed to trigger Mastra:', errorText);
-      return new Response(JSON.stringify({ error: 'Mastra invocation failed', details: errorText }), { status: 502 });
-    }
-
-    const data = await mastraResponse.json();
+    }).catch(err => console.error('Failed to trigger Mastra background task:', err));
 
     return new Response(
-      JSON.stringify({ status: 'success', message: 'Delegated to Orchestrator', data }),
-      { headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ status: 'accepted', message: 'Delegated to Orchestrator in background' }),
+      { status: 202, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
     console.error('Webhook error:', error);
