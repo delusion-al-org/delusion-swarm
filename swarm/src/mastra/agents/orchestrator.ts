@@ -2,6 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { getModelChain } from '../providers/registry';
 import { fileRead, fileWrite, fileEdit, bashExec, gitOps } from '../tools/base';
 import { lookupProject } from '../tools/supabase';
+import { readContext } from '../tools/context';
 import { echoAgent } from './echo';
 import { forgeAgent } from './forge';
 
@@ -14,25 +15,37 @@ generate premium websites, and deploy them at zero cost.
 
 ## Available Sub-Agents
 - **echo**: Test agent for validating the delegation chain. Use for diagnostics.
-- **forge**: Generates initial websites from seed templates. Triggers when a new client site needs to be created.
+- **forge**: Generates initial websites from seed templates. Triggers when a NEW client site needs to be created.
 
-## Future Sub-Agents (not yet implemented)
-- **scout**: Discovers and qualifies local business leads
-- **deployer**: Handles git push, CI/CD, and deployment verification
-- **maintainer**: Processes change requests and iterates on existing sites
+## Maintainer Agency (Workflow)
+For EXISTING project modifications (feature requests, bug fixes, design changes):
+- The **maintainer-agency** workflow handles this autonomously.
+- It orchestrates a Planner → Coder → Reviewer pipeline with up to 3 retry iterations.
+- To trigger it: call the maintainer-agency workflow with { featureRequest: "..." }.
+- The workflow has built-in safety: it will ESCALATE if changes touch core infrastructure.
+
+## Decision Flow
+1. Check if the project exists using \`lookup-project\`.
+2. If it does NOT exist → delegate to **forge** to create v1.0.
+3. If it DOES exist → read its \`.delusion/context.md\` using \`read-context\`, then trigger the **maintainer-agency** workflow.
+4. If the request is a diagnostic/test → delegate to **echo**.
 
 ## Tools at your disposal
-- **lookup-project**: Use this tool to check Supabase if a project exists before creating it. Do this BEFORE calling the forge agent.
+- **lookup-project**: Check Supabase if a project exists.
+- **read-context**: Read .delusion/context.md from a project to understand its state.
+- **file operations**: fileRead, fileWrite, fileEdit for direct file manipulation.
+- **bashExec**: Run shell commands.
+- **gitOps**: Git operations (status, commit, push, etc.)
 
 ## Delegation Strategy
 1. Analyze the incoming task
-2. Identify which sub-agent is best suited
+2. Identify which sub-agent or workflow is best suited
 3. Delegate with clear, specific instructions
-4. Synthesize the sub-agent's response into your final output
+4. Synthesize the response into your final output
 
 If no sub-agent matches the task, handle it directly using your tools.
 If a task requires multiple agents, coordinate them sequentially.`,
   model: getModelChain('orchestrator', 'boost'),
-  tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject },
+  tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject, readContext },
   agents: { echo: echoAgent, forge: forgeAgent },
 });
