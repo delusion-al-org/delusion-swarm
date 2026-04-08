@@ -1,45 +1,122 @@
 # Architecture Critique: The Intelligence Layer (Programming Team)
 
+> **Last updated**: 2026-04-08 | **Status**: Partially implemented | **Branch**: `feat/intelligence-layer`
+
 ## 1. The Bottleneck of a Single "Maintainer" Agent
 **Current thought**: A single `maintainer` agent handles iteration.
 **Critique**: This clashes with the vision of a "Professional AI Agency". A single agent trying to plan, write code, run tests, and commit will hit context limits and loop infinitely (as seen in previous historical trading swarm issues).
-**Solution**: The "Maintainer" should actually be a **Mastra Workflow** that coordinates a Swarm, or a **Lead Agent** that delegates to specialized roles:
-- **Planner Agent**: Analyzes the request, reads context, creates a checklist.
-- **Coder Agent**: Executes edits on specific files.
-- **Verifier/Reviewer Agent (The 'Judgment Day' Protocol)**: Acts as an adversarial judge. If code fails, it bounces back to Coder. **Crucially**, this phase runs multiple parallel reviewers:
-  - *Judge A (Logic & Correctness)*: Validates tests, syntax, and specs.
-  - *Judge B (Condensation & Generalization)*: Analyzes the new code against the **Global Engram Brain**. If it detects a repeated pattern (e.g., this is the 3rd time we build a specialized "calendar booking" section), it extracts it into a generalized `@delusion/blocks` component, registers it in the Engram, and condenses the local client's code to use the new block.
+**Solution**: ✅ **IMPLEMENTED** — The "Maintainer" is now a **Mastra Workflow** (`workflows/maintainer.ts`) that orchestrates three specialized agents:
+- **Planner Agent** (`planner.ts`): Analyzes the request, reads context, creates a checklist. Queries Engram for "Golden Action Recipes".
+- **Coder Agent** (`coder.ts`): Executes edits via `multi_replace`. Strict token economy, `free` tier.
+- **Reviewer Agent** (`reviewer.ts`): Judgment Day Protocol — Judge A (Correctness) + Judge B (Abstraction).
 
-## 2. Memory: Engram vs `.delusion/context.md` per Project
-**Current thought**: Give each client project its own SQLite `.engram` database to communicate between projects.
-**Critique**: 
-1. SQLite requires an active server process per DB. Managing 100 SQLite processes at scale is an infrastructure nightmare.
-2. Git already tracks history perfectly. A binary `.db` file in a git repo causes massive merge conflicts and bloat.
-**Solution**: 
-- **Central Engram**: The Orchestrator uses the global Engram to learn *cross-project* skills (e.g. "We always get asked to add WhatsApp buttons, let's make a generic tool for it").
-- **Local Markdown Context (`.delusion/context.md`)**: The truth of the *client's project* lives in plain text. It is git-versioned, human-readable, and easily injected into prompts.
+**Security**: `codeStep` has a circuit breaker. If `planStep` detects core files (`src/mastra/`, `openspec/`), the workflow aborts with `SECURITY_HALT`.
 
-## 3. Tool Ecosystem & Self-Improvement
-**Current thought**: The swarm writes its own tools dynamically.
-**Critique**: Hot-reloading Mastra TypeScript tools dynamically in the middle of a run is dangerous and unstable.
-**Solution**: 
-Instead of modifying Mastra internals, agents employ **Golden Action Recipes**:
-1. When Judge A and Judge B find that the `Coder` agent solved a problem brilliantly (e.g., modifying specific lines in `tailwind.config.mjs` to apply a brand new color scheme via `multi_replace`), Judge B abstracts not just the code, but the **editing pattern itself**.
-2. This pattern is saved into the Engram Brain (or as a YAML schema in `.delusion/recipes/`).
-3. Future Planner Agents query Engram for "How to change tailwind themes", discover the successful "Action Recipe", and pass the exact diff template to the Coder. This bypasses the LLM's "thinking/reasoning" phase almost entirely for known operations, dropping token cost near zero.
+## 2. The Retry Loop (IMPROVEMENT NEEDED)
 
-## 4. Claude Code-Style Prompting
-**Implementation**: We will adopt the "Plan -> Search -> Edit -> Verify" loop. 
-This requires giving the Programming Team very specific tools:
-- `semantic_grep`: To find code without reading whole files.
-- `ast_edit`: Instead of re-writing full files, edit specific lines.
-- `warn_admins`: A tool that pauses the workflow and sends an alert (Slack/Discord/Stdout) if the Planner determines the request requires restructuring > 5 files or modifying the core seeds.
+**Status**: ❌ Not yet implemented (Task 3.3)
 
-## 5. Supabase State Machine
-**Workflow**: 
+**Current**: Steps execute linearly: `plan → code → review`. If review rejects, the workflow ends.
+
+**Recommended**: Use Mastra's native `.dowhile()` to create a deterministic retry loop:
+```typescript
+maintainerWorkflow
+  .then(planStep)
+  .dowhile(
+    codeReviewSubWorkflow,
+    ({ context }) => {
+      const review = context.getStepResult('reviewStep');
+      return review.status === 'REJECT' && review.iteration < 3;
+    }
+  );
+```
+
+**Why native `dowhile` over manual retry logic**:
+- The execution graph becomes **observable** and **serializable** by Mastra
+- Time-travel debugging works (you can pause, inspect state, and resume)
+- Mastra can persist the graph state to storage for crash recovery
+
+## 3. Memory: Engram vs `.delusion/context.md` per Project
+
+**Solution**: ✅ **ARCHITECTURE CONFIRMED** — Dual memory system:
+- **Central Engram**: Cross-project skills, Golden Action Recipes, generalized patterns
+- **Local `.delusion/context.md`**: Client-specific state, git-versioned, human-readable
+
+**⚠️ GAP**: The Engram tools inside Mastra (`mem-search.ts`, `mem-save.ts`) are **STUBS**. They log to console but don't connect to the real database. This must be implemented before the system can learn.
+
+## 4. Tool Ecosystem & Self-Improvement (Golden Action Recipes)
+
+**Solution**: ✅ **ARCHITECTURE CONFIRMED** — Instead of agents modifying Mastra tools at runtime:
+1. Judge B identifies brilliant solutions and abstracts the **editing pattern** (not just the code).
+2. Pattern saved to Engram as a "Golden Action Recipe" with exact diff templates.
+3. Future Planner queries Engram, discovers the Recipe, and passes it to Coder.
+4. Coder executes mechanically → near-zero reasoning tokens for known operations.
+
+**⚠️ IMPROVEMENT**: Judge B should run **asynchronously** after the main workflow completes (see §6 below).
+
+## 5. Claude Code-Style Prompting
+
+**Status**: ✅ **IMPLEMENTED** — The Programming Team has specific tools:
+- `multi_replace`: AST-like diff editing (90% token reduction)
+- `read-context` / `update-context`: Project awareness
+- `warn_admins`: Escalation circuit breaker
+- `memSearch` / `memSave`: Engram connectivity (stubs)
+
+## 6. Judge B as Async Post-Mortem (NEW — IMPROVEMENT)
+
+**Problem**: Running Judge B (Abstraction/Generalization) synchronously inside `reviewStep` means:
+- Client pays for the swarm's internal learning time
+- Workflow duration increases by 30-60s per review
+- Timeout risk in edge function / webhook contexts
+
+**Solution**: Split the Reviewer into two phases:
+1. `reviewStep` = **Judge A only** (correctness validation, fast, ~10s)
+2. On `APPROVE` → emit a Mastra pub/sub event
+3. Async consumer runs **Judge B** silently in the background
+4. Judge B saves Golden Recipes to Engram without blocking the client
+
+## 7. Supabase State Machine
+
+**Workflow**:
 1. `Supabase` triggers a webhook when a client requests a feature.
-2. Orchestrator reads Supabase. 
-3. Looks up the repo, pulls late commits.
+2. Orchestrator reads Supabase.
+3. Looks up the repo, pulls latest commits.
 4. Reads `.delusion/context.md` (which knows exactly where it left off).
 5. Kicks off the Programming Team Workflow.
 6. Team finishes, pushes to Git, updates `context.md`, updates Supabase status to `completed`.
+
+## 8. Sandbox Hardening (NEW — IMPROVEMENT)
+
+**Current guard**: Blocklist check for `src/mastra` and `openspec/` in path strings.
+
+**Weaknesses identified**:
+- Path traversal (`../../../etc/passwd`) bypasses the check
+- No file extension filtering (agents could edit `.env`, `.key`, `docker-compose.yml`)
+- No workspace root anchoring
+
+**Recommended**: Allowlist-based sandbox:
+1. Define `AGENT_WORKSPACE` env var as the only writable directory
+2. Resolve all paths and verify they start with the workspace root
+3. Allow only safe extensions: `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.html`, `.md`, `.json`, `.astro`
+4. Reject all symlinks (prevent escape via symlink following)
+
+## 9. Job Queue Architecture (NEW — IMPROVEMENT)
+
+**Problem**: `orchestrator.ts` currently would call `maintainerWorkflow.execute()` in-process. 10 concurrent requests = 10 LLM streams = OOM in Node.js.
+
+**Solution**: Orchestrator becomes a **Dispatcher**:
+```
+Supabase Webhook → Orchestrator (lightweight) → Job Queue → Worker Pool
+                                                              ↓
+                                                    maintainerWorkflow.execute()
+```
+
+**Options evaluated**:
+| Solution | Pros | Cons |
+|----------|------|------|
+| **Inngest** | Serverless, event-driven, perfect for Mastra | Vendor dependency |
+| **Trigger.dev** | OSS, good DX | Requires self-hosting |
+| **BullMQ + Redis** | Battle-tested, self-hosted | Redis infrastructure |
+| **Mastra `.startAsync()`** | Zero infra | No queue persistence, no retries |
+
+**Recommendation**: Start with Mastra `.startAsync()` for MVP, migrate to Inngest/Trigger.dev when concurrent load exceeds 5 simultaneous workflows.

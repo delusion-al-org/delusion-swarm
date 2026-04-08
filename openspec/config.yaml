@@ -12,15 +12,15 @@ context: |
 strict_tdd: false  # Will enable once Vitest is configured
 
 testing:
-  runner: { available: false, note: "New project — Vitest to be added in first change" }
+  runner: { available: false, note: "Vitest to be configured next — unit tests for sandbox + workflow steps" }
   layers:
-    unit: { available: false }
+    unit: { available: false, note: "Vitest setup pending" }
     integration: { available: false }
     e2e: { available: false }
   coverage: { available: false }
   quality:
     linter: { available: false, note: "ESLint to be added" }
-    type_checker: { available: false, note: "tsc --noEmit once tsconfig exists" }
+    type_checker: { available: true, command: "bunx tsc --noEmit", note: "Verified 0 errors on feat/intelligence-layer (2026-04-08)" }
     formatter: { available: false, note: "Prettier to be added" }
 
 rules:
