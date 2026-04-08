@@ -2,6 +2,8 @@ import { Agent } from '@mastra/core/agent';
 import { getModelChain } from '../providers/registry';
 import { searchBlocks } from '../tools/blocks';
 import { registerProject } from '../tools/supabase';
+import { readContext } from '../tools/context';
+import { hydrateProject } from '../tools/fs/tenant-hydrator';
 
 export const forgeAgent = new Agent({
   id: 'forge',
@@ -23,11 +25,13 @@ WORKFLOW:
 2. Call \`search-blocks\` for relevant layout components.
 3. Construct \`delusion.json\` mapping block names to props.
 4. If anything is beyond existing blocks, describe it in \`custom_sections\` for the Coder.
-5. Call \`register-project\` with client metadata and seed version used.
+5. Call \`hydrate-project\` to create the physical workspace with your generated JSON.
+6. Call \`register-project\` with client metadata and seed version used.
 `,
   model: getModelChain('forge', 'free'),
   tools: {
     searchBlocks,
     registerProject,
+    hydrateProject,
   },
 });

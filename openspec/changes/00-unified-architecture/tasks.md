@@ -7,9 +7,10 @@
 - [x] 1.4 Test Astro build locally — **PASSED** (Zod validates, SEO meta tags injected correctly).
 
 ## Phase 2: Supabase Connectivity & Forge Agent
-- [ ] 2.1 Set up `supabase/functions/webhook-mastra/index.ts` for tenant change triggers (`REQ-01`).
+- [x] 2.1 Set up `supabase/functions/webhook-mastra/index.ts` for tenant change triggers (`REQ-01`).
 - [x] 2.2 Update `swarm/src/mastra/agents/forge.ts` — allow `custom_sections` for features beyond blocks (`REQ-02`).
 - [x] 2.3 Extend `swarm/src/mastra/schemas/delusion-config.ts` — add `seo`, `custom_sections`, `seed.version`, `i18n_enabled` (`REQ-04`).
+- [x] 2.4 Create `tenant-hydrator.ts` tool to bridge Force JSON output to Astro local workspace provisioning.
 
 ## Phase 3: The Maintainer Agency (Creative Coders)
 - [x] 3.1 Maintainer workflow already scaffolded by Miguel (Planner → Coder → Reviewer).
