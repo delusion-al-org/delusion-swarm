@@ -1,0 +1,42 @@
+---
+import { getEntry } from 'astro:content';
+import { SEO } from 'astro-seo';
+import '../styles/global.css';
+
+const business = await getEntry('business', 'delusion');
+const { site, seo } = business.data;
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = site.title, description = site.description } = Astro.props;
+---
+<!doctype html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <SEO
+      title={title}
+      description={description}
+      noindex={seo.noindex}
+      openGraph={{
+        basic: {
+          title: title,
+          type: "website",
+          image: seo.og_image ?? "",
+        }
+      }}
+      extend={{
+        meta: seo.google_site_verification
+          ? [{ name: "google-site-verification", content: seo.google_site_verification }]
+          : [],
+      }}
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

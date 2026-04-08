@@ -1,0 +1,28 @@
+---
+import { getEntry } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import HeroSection from '@delusion/blocks/components/HeroSection.astro';
+import MenuSection from '@delusion/blocks/components/MenuSection.astro';
+import ContactSection from '@delusion/blocks/components/ContactSection.astro';
+
+const business = await getEntry('business', 'delusion');
+const { site, contact, content } = business.data;
+
+const heroData = content?.hero ?? {};
+const menuData = content?.menu ?? { title: 'Menu', items: [] };
+---
+<Layout>
+  <HeroSection
+    title={heroData.title ?? site.title}
+    subtitle={heroData.subtitle ?? site.description}
+    ctaLabel={heroData.ctaLabel ?? 'Contáctanos'}
+    ctaHref={heroData.ctaHref ?? '#contact'}
+  />
+  <MenuSection title={menuData.title} items={menuData.items} />
+  <ContactSection
+    title="Encuéntranos"
+    address={contact?.address ?? ''}
+    phone={contact?.phone ?? ''}
+    email={contact?.email ?? ''}
+  />
+</Layout>

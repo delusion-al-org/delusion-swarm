@@ -1,0 +1,29 @@
+{
+  "site": {
+    "title": "Ejemplo Business",
+    "description": "Una landing page generada por Delusion Swarm.",
+    "url": "https://example.com",
+    "primary_color": "#6366f1"
+  },
+  "seo": {
+    "noindex": false
+  },
+  "contact": {
+    "email": "hola@example.com",
+    "phone": "+34 600 000 000",
+    "address": "Calle Mayor 1, Madrid"
+  },
+  "content": {
+    "hero": {
+      "title": "Tu Negocio, Potenciado",
+      "subtitle": "Llegamos a tus clientes donde están.",
+      "ctaLabel": "Contáctanos",
+      "ctaHref": "#contact"
+    },
+    "menu": {
+      "title": "Nuestros Servicios",
+      "items": []
+    }
+  },
+  "i18n_enabled": false
+}
