@@ -55,6 +55,7 @@ export const businessSchema = z.object({
  *
  * The Forge generates this JSON, and a deterministic script
  * injects it into the seed template. No LLM touches HTML/CSS directly.
+ * However, custom_sections allow the Coder agent to extend beyond blocks.
  */
 export const delusionConfigSchema = z.object({
   /** Schema version for forward compatibility */
@@ -71,16 +72,36 @@ export const delusionConfigSchema = z.object({
   /** Theme configuration */
   theme: themeSchema.default({}),
 
+  /** SEO configuration */
+  seo: z.object({
+    og_image: z.string().optional().describe('OpenGraph image URL'),
+    google_site_verification: z.string().optional(),
+    noindex: z.boolean().default(false),
+  }).default({}),
+
   /** Page sections — ordered list of blocks with their props */
   sections: z.array(sectionSchema).min(1).describe('Page sections using @delusion/blocks'),
 
+  /** Custom sections beyond existing blocks — Coder agent handles these */
+  custom_sections: z.array(z.object({
+    name: z.string().describe('Feature name (e.g. "booking-calendar")'),
+    description: z.string().describe('What the client needs — Coder will implement'),
+    placement: z.enum(['before', 'after']).default('after'),
+    after_section: z.number().optional().describe('Insert after which section index'),
+  })).optional().describe('Features not in @delusion/blocks — routed to Coder'),
+
   /** Seed metadata */
   seed: z.object({
-    /** Which layout type to use (landing, portfolio, ecommerce) */
+    /** Which layout type to use (landing, site, shop) */
     layout: z.string().default('landing'),
     /** Which business template to base on (restaurant, bakery, salon) */
     template: z.string().describe('Business-type seed template'),
+    /** NPM version of the seed used — for tracking and global upgrades */
+    version: z.string().default('0.1.0').describe('Locked seed version for this tenant'),
   }),
+
+  /** Feature flags */
+  i18n_enabled: z.boolean().default(false).describe('Enable multi-language support'),
 });
 
 export type DelusionConfig = z.infer<typeof delusionConfigSchema>;
