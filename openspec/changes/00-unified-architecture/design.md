@@ -46,6 +46,8 @@ We will unify the Delusion Swarm by combining a Mastra-powered agent runtime (Fo
      (requiresMaintainer? ──→ chained Maintainer Workflow)
                    │
                    ▼
+         [Ejected Tenant Repo (GitHub via MCP)]
+                   │
            (Astro Build Phase)
                    ▼
           [GitHub Pages Deploy]

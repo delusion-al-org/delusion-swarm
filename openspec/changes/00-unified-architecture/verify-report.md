@@ -1,38 +1,39 @@
 # SDD-Verify & Judgment Day Report
 **Target**: Unified Swarm Architecture & E2E Wiring
-**Mode**: Theoretical Adversarial Analysis
+**Mode**: Theoretical Adversarial Analysis (Round 2)
 
 ---
 
-## 1. Judgment Day Verdict (Adversarial Flow Analysis)
+## 1. Judgment Day Verdict (Round 2 - Escalation / Data flow Analysis)
 
 | Finding | Severity | Description |
 |---------|----------|-------------|
-| **Destructive Re-Hydration** | CRITICAL | `tenant-hydrator.ts` uses `fs.cp()` to blind-copy the seed. If `forgeWorkflow` is re-triggered on an existing tenant, it will OVERWRITE any custom `.astro` code created by the Maintainer. |
-| **Missing Handoff (Day 1 Features)** | CRITICAL | Forge outputs `custom_sections` in `delusion.json`. However, the Orchestrator does not check the output to trigger the Maintainer. The site hydrates with empty placeholders and the custom feature is never built. |
-| **Edge Function Timeout Block** | CRITICAL | Supabase Edge Functions timeout after ~15s (standard). Mastra's LLM generation takes 20-40s. Awaiting the orchestrator in `webhook-mastra` will cause a 504 Gateway Timeout and crash the registry loop. |
-| **Outdated Design Specs** | WARNING | `design.md` still refers to `seeds/restaurant` (deleted) and `Forge Agent` (now a workflow). |
+| **Deployment Regression (Lost GitHub Ejection)** | CRITICAL | In the recent modification switching from \`forgeAgent\` to \`forgeWorkflow(hydrateWorkspaceStep)\`, the deployment path was implicitly cut off. The workspace is created locally via \`fs\`, but it is NEVER ejected to GitHub as a standalone Repo. |
+| **Zero-Cost Scaling Broken** | CRITICAL | If the swarm only hydrates the \`AGENT_WORKSPACE\` locally but doesn't push the tenant code to GitHub, the client sites cannot leverage GitHub Pages. Local hosting will rapidly drain compute and break the zero-cost architecture vision. |
 
 ---
 
-## 2. SDD Compliance Matrix (Static Code vs Design)
+## 2. SDD Compliance Matrix (Post-Round 1 Fixes)
 
 | Requirement | Spec/Design Goal | Implementation Status | Notes |
 |-------------|------------------|-----------------------|-------|
-| REQ-01 | Tenant triggers via Supabase | ⚠️ Partial | Webhook exists, but it blocks execution leading to timeouts. |
-| REQ-02 | Forge delegates to Maintainer | ❌ Failing | `custom_sections` schema exists, but orchestration pipeline drops the ball. |
-| REQ-03 | Content Collections Zod Sync | ✅ Compliant | `delusion.json` strictly aligned with `astro:content`. |
-| Architecture | Sandbox Core | ✅ Compliant | `multi-replace.ts` restricts Coder to `AGENT_WORKSPACE`. |
+| REQ-01 | Tenant triggers via Supabase | ✅ Compliant | Fire-and-Forget Webhook implemented (Timeout risk removed). |
+| REQ-02 | Forge delegates to Maintainer | ✅ Compliant | \`requiresMaintainer\` propagation allows direct chaining. |
+| REQ-03 | Content Collections Zod Sync | ✅ Compliant | Zod schema strictly enforced. |
+| Architecture | Sandbox Core | ✅ Compliant | Strict file locks present in \`multi-replace.ts\` and \`tenant-hydrator.ts\`. |
+| Deployment | Zero-Cost Edge Hosting | ❌ Failing | Code stays on the local disk. Missing GitHub repo creation step. |
 
 ---
 
-## 3. Proposed Fixes (The Action Plan)
+## 3. Proposed Fixes (Round 2 Action Plan)
 
-1. **Hydrator Safety Lock**: Modify `tenant-hydrator.ts`. If `fs.stat` detects the target directory exists, skip the `fs.cp()` step and ONLY update `delusion.json`.
-2. **Day-1 Feature Chaining**: Modify `forgeWorkflow` to emit `requiresMaintainer: boolean`. Update `orchestrator.ts` to parse the workflow output: if true, immediately trigger the `maintainerWorkflow`.
-3. **Fire-and-Forget Webhook**: In `supabase/functions/webhook-mastra/index.ts`, remove the `await` for the `mastraResponse.json()` body. Just `fetch()` and immediately return `202 Accepted`.
-4. **Update Specs**: Overhaul `design.md` to reflect the true Final Architecture (Forge as a Workflow, `seed-landing` as the unified base, and the fix integrations).
+The original conceptual premise was: **"Every new tenant gets their own isolated Github Repo"**.
+Because we have the \`github-mcp-server\` attached to our local agent layer, we can implement an automated GitOps module!
+
+1. **Restore Design Specs**: Re-add the \`[Ejected Tenant Repo (GitHub via MCP)]\` step in \`design.md\` (already applied in real-time).
+2. **Git Deployment Step**: Create a new step in \`forgeWorkflow\` called \`ejectToGithubStep\`.
+   - This step will orchestrate git commands via the MCP server (\`create_repository\`, \`push_files\`, or raw git shell logic using \`exec\`) inside the newly generated tenant workspace.
+   - It will authorize via the local Github PAT and push the Astro seed code initialized for the tenant.
 
 **JUDGMENT:** ESCALATED ⚠️
-Theoretical bugs present. Codebase not cleared for execution.
-Waiting for user approval to proceed with the surgical fix iteration.
+Regression detected on deployment viability. Waiting for user approval to proceed with the GitOps Ejection script creation.

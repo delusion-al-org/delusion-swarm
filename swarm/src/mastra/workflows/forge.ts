@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { forgeAgent } from '../agents/forge';
 import { hydrateProject } from '../tools/fs/tenant-hydrator';
 import { searchBlocks } from '../tools/blocks';
+import { ejectToGithub } from '../tools/git/eject-github';
 
 // Step 1: The AI generates the configuration natively
 const generateConfigStep = createStep({
@@ -20,7 +21,7 @@ const generateConfigStep = createStep({
     // We execute the Forge agent to ONLY think about the configuration structure.
     // It has the searchBlocks tool to know what components exist.
     const res = await forgeAgent.generate(
-      `Tenant ID: ${context.projectId}\nUser Request: ${context.prompt}\Generate the delusion.json config obeying the schema.`
+      `Tenant ID: ${context.projectId}\nUser Request: ${context.prompt}\nGenerate the delusion.json config obeying the schema.`
     );
     
     // Attempt to extract the JSON from the LLM output
@@ -77,6 +78,41 @@ const hydrateWorkspaceStep = createStep({
   },
 });
 
+// Step 3: GitOps Deployment (Zero-Cost Github Pages Ejection)
+const ejectToGithubStep = createStep({
+  id: 'ejectToGithub',
+  description: 'Pushes the locally hydrated workspace to a new isolated repository under delusion-al-org',
+  inputSchema: z.object({
+    projectId: z.string(),
+    path: z.string(),
+    requiresMaintainer: z.boolean(),
+  }),
+  outputSchema: z.object({
+    status: z.string(),
+    requiresMaintainer: z.boolean(),
+  }),
+  execute: async ({ context }) => {
+    console.log(`[ForgeWorkflow] Ejecting ${context.projectId} to GitHub...`);
+    
+    const result = await ejectToGithub.execute({
+      context: {
+        projectId: context.projectId,
+        targetDir: context.path,
+      }
+    });
+
+    if (result.status === 'error') {
+      console.warn('[ForgeWorkflow] Non-fatal workflow warning: Github Ejection failed. Workspace generated locally only.', result.message);
+    }
+
+    return {
+      status: result.status,
+      // Pass the maintainer chain downstream so Orchestrator can capture it still!
+      requiresMaintainer: context.requiresMaintainer, 
+    };
+  }
+});
+
 export const forgeWorkflow = createWorkflow({
   name: 'forge-agency',
   stepGraph: {
@@ -85,4 +121,5 @@ export const forgeWorkflow = createWorkflow({
 })
   .step(generateConfigStep)
   .then(hydrateWorkspaceStep)
+  .then(ejectToGithubStep)
   .commit();
