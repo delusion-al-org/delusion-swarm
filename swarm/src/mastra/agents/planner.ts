@@ -3,6 +3,8 @@ import { getModelChain } from '../providers/registry';
 
 import { memSearch } from '../tools/engram/mem-search';
 import { warnAdmins } from '../tools/admin/warn-admins';
+import { readContext } from '../tools/context';
+import { bashExec, fileRead } from '../tools/base';
 
 export const plannerAgent = new Agent({
   id: 'planner',
@@ -13,7 +15,7 @@ You DO NOT write code.
 
 CRITICAL WORKFLOW:
 1. Receive a task/feature request for an existing repository.
-2. Analyze the context (via given file contents or \`.delusion/context.md\`).
+2. Analyze the context (via given file contents or \`.delusion/context.md\`) and use \`bashExec\` to find/ls files to map the workspace if needed.
 3. Query the Engram Brain to see if a "Golden Action Recipe" (successful past edit pattern) exists for this type of feature.
 4. Output a strict JSON/Markdown checklist for the Coder Agent. 
 
@@ -22,5 +24,5 @@ If no Recipe exists, break Down the request using Claude Code principles: which 
 If the request requires changing more than 5 core architecture files, you MUST pause and flag it for \`warn_admins\`.
 `,
   model: getModelChain('planner', 'mid'),
-  tools: { memSearch, warnAdmins },
+  tools: { memSearch, warnAdmins, readContext, fileRead, bashExec },
 });

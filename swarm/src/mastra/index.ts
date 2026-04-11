@@ -12,7 +12,7 @@ import { getConfiguredProviders } from './providers/registry';
 const startTime = Date.now();
 
 export const mastra = new Mastra({
-  agents: { orchestrator, planner: plannerAgent, coder: coderAgent, reviewer: reviewerAgent },
+  agents: { orchestrator, forge: forgeAgent, planner: plannerAgent, coder: coderAgent, reviewer: reviewerAgent },
   workflows: { maintainerWorkflow, forgeWorkflow },
   server: {
     port: Number(process.env.PORT) || 4111,

@@ -3,6 +3,7 @@ import { getModelChain } from '../providers/registry';
 import { fileRead, fileWrite, fileEdit, bashExec, gitOps } from '../tools/base';
 import { lookupProject } from '../tools/supabase';
 import { readContext } from '../tools/context';
+import { triggerForge, triggerMaintainer } from '../tools/workflows/trigger-workflows';
 import { echoAgent } from './echo';
 import { forgeAgent } from './forge';
 
@@ -17,17 +18,15 @@ generate premium websites, and deploy them at zero cost.
 - **echo**: Test agent for validating the delegation chain. Use for diagnostics.
 ## Forge Agency (Workflow)
 For NEW projects:
-- The **forge-agency** workflow handles this autonomously.
-- It orchestrates the Forge Agent to generate the JSON, then deterministically hydrates the file system.
-- To trigger it: call the forge-agency workflow with { prompt: "...", projectId: "tenant-x" }.
-- **IMPORTANT**: If forge-agency returns `requiresMaintainer: true`, you MUST immediately trigger the **maintainer-agency** workflow to fulfill the newly defined `custom_sections`.
+- Call the \`trigger-forge\` tool with { projectId: "tenant-x", prompt: "client requirements" }.
+- The workflow generates JSON config, hydrates the workspace, and deploys to GitHub Pages.
+- **IMPORTANT**: If trigger-forge returns \`requiresMaintainer: true\`, you MUST immediately call \`trigger-maintainer\` to fulfill the custom_sections.
 
 ## Maintainer Agency (Workflow)
 For EXISTING project modifications (feature requests, bug fixes, design changes):
-- The **maintainer-agency** workflow handles this autonomously.
-- It orchestrates a Planner → Coder → Reviewer pipeline with up to 3 retry iterations.
-- To trigger it: call the maintainer-agency workflow with { featureRequest: "..." }.
-- The workflow has built-in safety: it will ESCALATE if changes touch core infrastructure.
+- Call the \`trigger-maintainer\` tool with { featureRequest: "what needs to change" }.
+- The workflow orchestrates Planner → Coder → Reviewer with up to 3 retry iterations.
+- Built-in safety: the workflow will ESCALATE if changes touch core infrastructure files.
 
 ## Decision Flow
 1. Check if the project exists using \`lookup-project\`.
@@ -51,6 +50,6 @@ For EXISTING project modifications (feature requests, bug fixes, design changes)
 If no sub-agent matches the task, handle it directly using your tools.
 If a task requires multiple agents, coordinate them sequentially.`,
   model: getModelChain('orchestrator', 'boost'),
-  tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject, readContext },
+  tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject, readContext, triggerForge, triggerMaintainer },
   agents: { echo: echoAgent },
 });

@@ -15,7 +15,7 @@ export type Tier = 'free' | 'mid' | 'boost' | 'premium';
 export type CostMode = 'zero-cost' | 'balanced' | 'quality';
 
 /** Agent roles for tier clamping */
-type AgentRole = 'orchestrator' | 'scout' | 'forge' | 'deployer' | 'maintainer' | string;
+type AgentRole = 'orchestrator' | 'scout' | 'forge' | 'deployer' | 'maintainer' | 'planner' | 'coder' | 'reviewer' | string;
 
 /** Maximum tier per agent role per cost mode */
 const COST_MODE_CAPS: Record<CostMode, Record<string, Tier>> = {
@@ -25,6 +25,9 @@ const COST_MODE_CAPS: Record<CostMode, Record<string, Tier>> = {
     forge: 'free',
     deployer: 'free',
     maintainer: 'free',
+    planner: 'free',
+    coder: 'free',
+    reviewer: 'free',
     _default: 'free',
   },
   balanced: {
@@ -33,6 +36,9 @@ const COST_MODE_CAPS: Record<CostMode, Record<string, Tier>> = {
     forge: 'mid',
     deployer: 'free',
     maintainer: 'boost',
+    planner: 'mid',
+    coder: 'free',
+    reviewer: 'mid',
     _default: 'mid',
   },
   quality: {
@@ -41,6 +47,9 @@ const COST_MODE_CAPS: Record<CostMode, Record<string, Tier>> = {
     forge: 'boost',
     deployer: 'free',
     maintainer: 'premium',
+    planner: 'boost',
+    coder: 'mid',
+    reviewer: 'boost',
     _default: 'boost',
   },
 };

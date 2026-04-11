@@ -41,9 +41,13 @@ function validateSandbox(targetFile: string): { ok: true; resolved: string } | {
     return { ok: false, error: `PATH TRAVERSAL BLOCKED: "${targetFile}" resolves outside workspace (${workspace}).` };
   }
 
-  // 2. Core protection — double-check even if inside workspace
+  // 2. Core protection — block modifications to swarm infrastructure paths
   const relative = path.relative(workspace, resolved);
-  if (relative.includes('src/mastra') || relative.includes('openspec')) {
+  const segments = relative.split(path.sep);
+  const hasCoreSegment = segments.some((seg, i) =>
+    (seg === 'src' && segments[i + 1] === 'mastra') || seg === 'openspec'
+  );
+  if (hasCoreSegment) {
     return { ok: false, error: `CORE PROTECTION: Agents cannot modify swarm infrastructure ("${relative}").` };
   }
 

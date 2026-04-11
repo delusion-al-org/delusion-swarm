@@ -5,7 +5,7 @@ export const warnAdmins = createTool({
   id: 'warn_admins',
   description: 'Triggers an escalation to the human development team when the agent encounters an unsolvable problem, high uncertainty, or a massive architectural shift request.',
   inputSchema: z.object({
-    projectId: z.string().uuid(),
+    projectId: z.string(),
     reason: z.string(),
     severity: z.enum(['warning', 'critical']),
     agentRole: z.string(),

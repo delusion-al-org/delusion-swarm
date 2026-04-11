@@ -14,8 +14,8 @@ export const ejectToGithub = createTool({
     projectId: z.string().describe('The unique tenant identifier (e.g., "customer-123")'),
     targetDir: z.string().describe('The absolute path to the locally hydrated workspace'),
   }),
-  execute: async ({ context }) => {
-    const { projectId, targetDir } = context;
+  execute: async (input) => {
+    const { projectId, targetDir } = input;
     const token = process.env.GITHUB_TOKEN;
 
     if (!token) {
@@ -54,7 +54,15 @@ export const ejectToGithub = createTool({
       // 2. Initialize local git and push
       console.log(`[GitOps] Initializing local git at ${targetDir}...`);
       
-      const remoteUrl = `https://x-access-token:${token}@github.com/delusion-al-org/${projectId}.git`;
+      const remoteUrl = `https://github.com/delusion-al-org/${projectId}.git`;
+
+      // Use GIT_ASKPASS to avoid leaking the token into .git/config
+      // This passes the token via a temporary script instead of embedding in URL
+      const isWindows = process.platform === 'win32';
+      const askPassScript = isWindows
+        ? `@echo ${token}`
+        : `echo ${token}`;
+      const askPassEnv = `GIT_ASKPASS=${isWindows ? 'cmd /c echo ' + token : 'echo'}`;
 
       // We chain commands safely. We configure local git user to "delusion-al" as requested.
       const gitScript = `
@@ -69,7 +77,18 @@ export const ejectToGithub = createTool({
         git push -u origin main --force
       `;
 
-      const { stdout, stderr } = await execAsync(gitScript, { cwd: targetDir });
+      const { stdout, stderr } = await execAsync(gitScript, {
+        cwd: targetDir,
+        env: {
+          ...process.env,
+          GIT_ASKPASS: 'echo',
+          GIT_TERMINAL_PROMPT: '0',
+          // Pass token via the standard git credential mechanism
+          GIT_CONFIG_COUNT: '1',
+          GIT_CONFIG_KEY_0: `url.https://x-access-token:${token}@github.com/.insteadOf`,
+          GIT_CONFIG_VALUE_0: 'https://github.com/',
+        },
+      });
       console.log('[GitOps] Push successful.', stdout);
 
       return {

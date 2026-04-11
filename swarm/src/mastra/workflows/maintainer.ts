@@ -8,24 +8,24 @@ import { reviewerAgent } from '../agents/reviewer';
 // SCHEMAS — shared between steps for type consistency
 // ═══════════════════════════════════════════════════════════
 
-const planOutputSchema = z.object({
   checklist: z.string(),
   containsCoreFiles: z.boolean(),
   featureRequest: z.string(),
+  projectPath: z.string().optional(),
 });
 
-const codeOutputSchema = z.object({
   repoState: z.string(),
   containsCoreFiles: z.boolean(),
   iteration: z.number(),
   checklist: z.string(),
+  projectPath: z.string().optional(),
 });
 
-const reviewOutputSchema = z.object({
   status: z.enum(['APPROVE', 'REJECT', 'ESCALATE', 'SECURITY_HALT']),
   feedback: z.string(),
   iteration: z.number(),
   checklist: z.string(),
+  projectPath: z.string().optional(),
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -34,12 +34,17 @@ const reviewOutputSchema = z.object({
 
 const planStep = createStep({
   id: 'planStep',
-  inputSchema: z.any(),
+  inputSchema: z.object({
+    featureRequest: z.string().optional(),
+    projectPath: z.string().optional().describe('Absolute path to the tenant workspace'),
+  }),
   outputSchema: planOutputSchema,
-  execute: async (context: any) => {
-    const featureRequest = (context.inputData as any)?.featureRequest || '';
+  execute: async ({ inputData }) => {
+    const featureRequest = inputData?.featureRequest || '';
+    const projectPath = inputData?.projectPath || '';
+    const projectCtx = projectPath ? `\nTarget Project Path: ${projectPath}. Use your tools to read the context and files from this directory.` : '';
 
-    const res = await plannerAgent.generate(`Plan execution for: ${featureRequest}`);
+    const res = await plannerAgent.generate(`Plan execution for: ${featureRequest}${projectCtx}`);
 
     const isDangerous = res.text.includes('src/mastra') || res.text.includes('openspec/');
 
@@ -47,6 +52,7 @@ const planStep = createStep({
       checklist: res.text,
       containsCoreFiles: isDangerous,
       featureRequest,
+      projectPath,
     };
   },
 });
@@ -57,14 +63,20 @@ const planStep = createStep({
 
 const codeStep = createStep({
   id: 'codeStep',
-  inputSchema: z.any(),
+  inputSchema: z.object({
+    checklist: z.string(),
+    containsCoreFiles: z.boolean(),
+    featureRequest: z.string().optional(),
+    feedback: z.string().optional(),
+    iteration: z.number().optional(),
+    projectPath: z.string().optional(),
+  }),
   outputSchema: codeOutputSchema,
-  execute: async (context: any) => {
-    // On first pass, input comes from planStep. On retry, from reviewStep.
-    const input = context.inputData;
-    const checklist = input?.checklist || '';
-    const containsCoreFiles = input?.containsCoreFiles ?? false;
-    const iteration = (input?.iteration ?? 0) + 1;
+  execute: async ({ inputData }) => {
+    const checklist = inputData?.checklist || '';
+    const containsCoreFiles = inputData?.containsCoreFiles ?? false;
+    const iteration = (inputData?.iteration ?? 0) + 1;
+    const projectPath = inputData?.projectPath || '';
 
     if (containsCoreFiles) {
       return {
@@ -72,13 +84,15 @@ const codeStep = createStep({
         containsCoreFiles: true,
         iteration,
         checklist,
+        projectPath,
       };
     }
 
-    const feedback = input?.feedback || '';
+    const feedback = inputData?.feedback || '';
+    const promptPath = projectPath ? `\nTarget Project Path: ${projectPath}\nAll file reads and multi-replace paths must be absolute based on this path.` : '';
     const prompt = feedback
-      ? `Iteration ${iteration}: Fix the following issues and re-apply the plan.\nFeedback: ${feedback}\nOriginal plan: ${checklist}`
-      : `Execute the following plan: ${checklist}`;
+      ? `Iteration ${iteration}: Fix the following issues and re-apply the plan.\nFeedback: ${feedback}\nOriginal plan: ${checklist}${promptPath}`
+      : `Execute the following plan: ${checklist}${promptPath}`;
 
     await coderAgent.generate(prompt);
 
@@ -87,6 +101,7 @@ const codeStep = createStep({
       containsCoreFiles: false,
       iteration,
       checklist,
+      projectPath,
     };
   },
 });
@@ -98,27 +113,21 @@ const codeStep = createStep({
 
 const reviewStep = createStep({
   id: 'reviewStep',
-  inputSchema: z.any(),
+  inputSchema: codeOutputSchema,
   outputSchema: reviewOutputSchema,
-  execute: async (context: any) => {
-    const codeResult = context.inputData as {
-      repoState: string;
-      containsCoreFiles: boolean;
-      iteration: number;
-      checklist: string;
-    };
-
-    if (codeResult?.containsCoreFiles) {
+  execute: async ({ inputData }) => {
+    if (inputData?.containsCoreFiles) {
       return {
         status: 'SECURITY_HALT' as const,
         feedback: 'Security circuit breaker tripped. Manual intervention required.',
-        iteration: codeResult.iteration,
-        checklist: codeResult.checklist,
+        iteration: inputData.iteration,
+        checklist: inputData.checklist,
+        projectPath: inputData.projectPath,
       };
     }
 
     const res = await reviewerAgent.generate(
-      `[Judge A — Correctness Review]\nIteration: ${codeResult.iteration}\nChanges: ${codeResult.repoState}\n\nValidate syntax, logic, and structural correctness. If good, say APPROVE. If not, say REJECT: <reason>.`
+      `[Judge A — Correctness Review]\nIteration: ${inputData.iteration}\nChanges: ${inputData.repoState}\n\nValidate syntax, logic, and structural correctness. If good, say APPROVE. If not, say REJECT: <reason>.`
     );
 
     let status: 'APPROVE' | 'REJECT' | 'ESCALATE' | 'SECURITY_HALT' = 'APPROVE';
@@ -128,33 +137,33 @@ const reviewStep = createStep({
     return {
       status,
       feedback: res.text,
-      iteration: codeResult.iteration,
-      checklist: codeResult.checklist,
+      iteration: inputData.iteration,
+      checklist: inputData.checklist,
+      projectPath: inputData.projectPath,
     };
   },
 });
 
 // ═══════════════════════════════════════════════════════════
-// STEP 4: ESCALATION — warn_admins after 3 failed iterations
+// STEP 4: ESCALATION — warn_admins after max failed iterations
 // ═══════════════════════════════════════════════════════════
 
 const escalateStep = createStep({
   id: 'escalateStep',
-  inputSchema: z.any(),
+  inputSchema: reviewOutputSchema,
   outputSchema: z.object({
     status: z.literal('ESCALATED'),
     reason: z.string(),
     iterations: z.number(),
   }),
-  execute: async (context: any) => {
-    const input = context.inputData;
-    console.error(`\n🚨 MAINTAINER WORKFLOW ESCALATION — Failed after ${input?.iteration || 3} iterations`);
-    console.error(`Last feedback: ${input?.feedback || 'N/A'}\n`);
+  execute: async ({ inputData }) => {
+    console.error(`\n🚨 MAINTAINER WORKFLOW ESCALATION — Failed after ${inputData?.iteration || 3} iterations`);
+    console.error(`Last feedback: ${inputData?.feedback || 'N/A'}\n`);
 
     return {
       status: 'ESCALATED' as const,
-      reason: input?.feedback || 'Max iterations reached without approval',
-      iterations: input?.iteration || 3,
+      reason: inputData?.feedback || 'Max iterations reached without approval',
+      iterations: inputData?.iteration || 3,
     };
   },
 });
@@ -165,20 +174,18 @@ const escalateStep = createStep({
 
 const finalizeStep = createStep({
   id: 'finalizeStep',
-  inputSchema: z.any(),
+  inputSchema: reviewOutputSchema,
   outputSchema: z.object({
     status: z.string(),
     summary: z.string(),
   }),
-  execute: async (context: any) => {
-    const input = context.inputData;
-
+  execute: async ({ inputData }) => {
     // TODO: Emit pub/sub event here to trigger async Judge B
-    // mastra.events.emit('workflow.approved', { diff: input.repoState });
+    // mastra.events.emit('workflow.approved', { diff: inputData.repoState });
 
     return {
       status: 'COMPLETED',
-      summary: `Maintainer workflow completed after ${input?.iteration || 1} iteration(s). Changes approved.`,
+      summary: `Maintainer workflow completed after ${inputData?.iteration || 1} iteration(s). Changes approved.`,
     };
   },
 });
@@ -191,9 +198,15 @@ const MAX_ITERATIONS = 3;
 
 const codeReviewLoop = createWorkflow({
   id: 'code-review-loop',
-  inputSchema: z.any(),
+  inputSchema: z.object({
+    checklist: z.string(),
+    containsCoreFiles: z.boolean(),
+    featureRequest: z.string().optional(),
+    feedback: z.string().optional(),
+    iteration: z.number().optional(),
+    projectPath: z.string().optional(),
+  }),
   outputSchema: reviewOutputSchema,
-  steps: [codeStep, reviewStep],
 })
   .then(codeStep)
   .then(reviewStep)
@@ -207,12 +220,10 @@ export const maintainerWorkflow = createWorkflow({
   id: 'maintainer-agency',
   inputSchema: z.object({
     featureRequest: z.string().optional(),
+    projectPath: z.string().optional(),
   }),
   outputSchema: z.any(),
-  steps: [planStep, codeReviewLoop, escalateStep, finalizeStep],
-});
-
-maintainerWorkflow
+})
   .then(planStep)
   .dountil(
     codeReviewLoop,

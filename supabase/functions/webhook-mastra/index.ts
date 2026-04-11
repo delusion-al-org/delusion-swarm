@@ -20,7 +20,7 @@ serve(async (req: Request) => {
   // Optional: Verify Webhook Secret to prevent unauthorized invocations
   if (WEBHOOK_SECRET) {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || authHeader !== \`Bearer \${WEBHOOK_SECRET}\`) {
+    if (!authHeader || authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
       return new Response('Unauthorized', { status: 401 });
     }
   }
@@ -28,18 +28,18 @@ serve(async (req: Request) => {
   try {
     const payload: WebhookPayload = await req.json();
 
-    console.log(\`Received \${payload.type} event on table \${payload.table}\`);
+    console.log(`Received ${payload.type} event on table ${payload.table}`);
 
     // Determine the action based on the tenant's new state
     let prompt = '';
     
     if (payload.table === 'tenants' && payload.type === 'INSERT') {
       const tenant = payload.record;
-      prompt = \`New client registered: \${tenant.name} (\${tenant.id}). Industry: \${tenant.industry || 'unknown'}. Requirements: \${tenant.requirements || 'Build a standard landing page'}. Please orchestrate the Forge Agent to build their site.\`;
+      prompt = `New client registered: ${tenant.name} (${tenant.id}). Industry: ${tenant.industry || 'unknown'}. Requirements: ${tenant.requirements || 'Build a standard landing page'}. Please orchestrate the Forge Agent to build their site.`;
       
     } else if (payload.table === 'feature_requests' && payload.type === 'INSERT') {
       const request = payload.record;
-      prompt = \`Tenant \${request.tenant_id} has a new feature request: \${request.description}. Please orchestrate the Maintainer workflow to implement this.\`;
+      prompt = `Tenant ${request.tenant_id} has a new feature request: ${request.description}. Please orchestrate the Maintainer workflow to implement this.`;
     } else {
       return new Response(JSON.stringify({ status: 'ignored', message: 'Unhandled event type or table' }), { 
         status: 200,
@@ -47,11 +47,11 @@ serve(async (req: Request) => {
       });
     }
 
-    console.log(\`Dispatching prompt to Orchestrator: \${prompt}\`);
+    console.log(`Dispatching prompt to Orchestrator: ${prompt}`);
 
     // Call Mastra's native agent generate endpoint in background (Fire-and-Forget)
     // We do NOT await this because Mastra LLM generation takes 20-40s and this endpoint timeouts.
-    fetch(\`\${MASTRA_API_URL}/api/agents/orchestrator/generate\`, {
+    fetch(`${MASTRA_API_URL}/api/agents/orchestrator/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,0 +1,76 @@
+[
+  {
+    "name": "HeroSection",
+    "category": "hero",
+    "tags": ["hero", "landing", "cta", "header", "banner"],
+    "description": "Full-width hero section with title, subtitle, and call-to-action button. The primary visual element at the top of a landing page.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "description": "Main headline text"
+      },
+      "subtitle": {
+        "type": "string",
+        "required": false,
+        "description": "Supporting text below the title"
+      },
+      "ctaLabel": {
+        "type": "string",
+        "required": true,
+        "description": "Text for the call-to-action button"
+      },
+      "ctaHref": {
+        "type": "string",
+        "required": true,
+        "description": "URL or anchor the CTA button links to (e.g., '#contact')"
+      }
+    }
+  },
+  {
+    "name": "MenuSection",
+    "category": "content",
+    "tags": ["menu", "services", "list", "pricing", "items", "catalog", "restaurant"],
+    "description": "Displays a list of items with names, descriptions, and prices. Commonly used for restaurant menus, service lists, or product catalogs.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": false,
+        "description": "Section heading text"
+      },
+      "items": {
+        "type": "MenuItem[]",
+        "required": true,
+        "description": "Array of menu items, each with: name (string, required), description (string, optional), price (string, required)"
+      }
+    }
+  },
+  {
+    "name": "ContactSection",
+    "category": "contact",
+    "tags": ["contact", "footer", "address", "phone", "email", "location", "find-us"],
+    "description": "Contact information section displaying business address, phone number, email, and a section title. Typically placed at the bottom of the page.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": false,
+        "description": "Section heading (e.g., 'Find Us', 'Contact')"
+      },
+      "address": {
+        "type": "string",
+        "required": false,
+        "description": "Physical business address"
+      },
+      "phone": {
+        "type": "string",
+        "required": false,
+        "description": "Phone number"
+      },
+      "email": {
+        "type": "string",
+        "required": false,
+        "description": "Email address"
+      }
+    }
+  }
+]

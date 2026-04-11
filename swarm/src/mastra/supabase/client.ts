@@ -2,11 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 
 // Note: The structure of the URL provided was a postgresql:// connection string.
 // The Supabase JS Client expects the REST API URL (https://<project-ref>.supabase.co).
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const isMock = !process.env.SUPABASE_URL || (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_ANON_KEY);
+const supabaseUrl = process.env.SUPABASE_URL || 'https://mock.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'mock-key';
 
-if (!supabaseKey) {
-  console.warn('SUPABASE_SERVICE_ROLE_KEY is missing. Supabase tools will fail.');
+if (isMock) {
+  console.warn('⚠️  WARNING: Supabase URL or Key is missing. Using mock values. Supabase tools (register, lookup) WILL fail if they actually make network requests.');
 }
 
 /**

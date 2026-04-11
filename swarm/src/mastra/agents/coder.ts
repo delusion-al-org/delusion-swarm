@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { getModelChain } from '../providers/registry';
 
 import { multiReplace } from '../tools/fs/multi-replace';
-import { bashExec } from '../tools/base';
+import { bashExec, fileRead } from '../tools/base';
 
 export const coderAgent = new Agent({
   id: 'coder',
@@ -20,5 +20,5 @@ CRITICAL RULES:
 Your output should only be tool calls (reading and replacing) and a final confidence string: "Execution Completed" or "Execution Failed".
 `,
   model: getModelChain('coder', 'free'),
-  tools: { multiReplace, bashExec },
+  tools: { multiReplace, bashExec, fileRead },
 });

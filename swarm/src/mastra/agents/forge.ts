@@ -1,8 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { getModelChain } from '../providers/registry';
 import { searchBlocks } from '../tools/blocks';
-import { registerProject } from '../tools/supabase';
-import { readContext } from '../tools/context';
 
 export const forgeAgent = new Agent({
   id: 'forge',
@@ -16,21 +14,18 @@ RULES:
 3. If the client request requires a feature NOT available in @delusion/blocks (e.g., a booking calendar, custom gallery, etc.), 
    flag it in the config under a "custom_sections" key with a description. 
    The Maintainer Agency's Coder agent will implement it as raw Astro code later.
-4. After generating the config, persist the project metadata using the \`register-project\` tool.
-5. Your JSON output MUST conform to the \`delusionConfigSchema\` — Zod will validate it at build time.
+4. Your JSON output MUST conform to the \`delusionConfigSchema\` — Zod will validate it at build time.
 
 WORKFLOW:
 1. Receive request (e.g., "Minimalist photography portfolio with dark mode").
 2. Call \`search-blocks\` for relevant layout components.
 3. Construct \`delusion.json\` mapping block names to props.
 4. If anything is beyond existing blocks, describe it in \`custom_sections\` for the Coder.
-5. Call \`hydrate-project\` to create the physical workspace with your generated JSON.
-6. Call \`register-project\` with client metadata and seed version used.
+5. Output the complete JSON config — the workflow pipeline handles hydration and deployment automatically.
 `,
   model: getModelChain('forge', 'free'),
   tools: {
     searchBlocks,
-    registerProject,
   },
 });
 

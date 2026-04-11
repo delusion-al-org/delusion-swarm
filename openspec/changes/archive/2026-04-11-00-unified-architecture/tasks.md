@@ -18,6 +18,21 @@
 - [x] 3.3 Enhanced Reviewer as Librarian with `memSearch` for cross-tenant pattern detection (`REQ-05`).
 
 ## Phase 4: Integration & E2E Validation
+- [x] 4.0 Fix Mastra v1.22 workflow API: `createWorkflow` with `id`/`inputSchema`/`outputSchema`, `inputData` in steps, `.then()` chaining — server boots cleanly.
 - [ ] 4.1 Mock Supabase webhook curl; verify Orchestrator invokes Forge.
 - [ ] 4.2 Send custom requirement prompt; verify routing to Maintainer Workflow.
-- [ ] 4.3 Configure tenant `package.json` locking to NPM seed versions (`REQ-04`).
+- [x] 4.3 NPM-based seed resolution (`REQ-04`) — `tenant-hydrator.ts` resolves seeds via `npm install @delusion/seed-{template}@{version}` (SEED_RESOLVE_MODE=npm) or local fallback for dev. Version locked in `package.json` with full provenance.
+
+## Phase 5: Hardening
+- [x] 5.1 Fix Forge agent instructions — removed misleading `hydrate-project` tool reference.
+- [x] 5.2 Fix `eject-github.ts` token security — use `GIT_CONFIG` env vars instead of embedding token in remote URL.
+- [x] 5.3 Fix `multi-replace.ts` sandbox — path segment matching instead of string includes.
+- [x] 5.4 Add `planner`, `coder`, `reviewer` roles to cost mode caps in provider registry.
+
+## Phase 6: Execution Gap Closure
+- [x] 6.1 Created `triggerForge` and `triggerMaintainer` wrapper tools bridging Agent↔Workflow gap (GAP-01).
+- [x] 6.2 Registered `forgeAgent` in Mastra `agents` map (was imported but never registered).
+- [x] 6.3 Fixed `webhook-mastra/index.ts` template literal syntax errors (GAP-06).
+- [x] 6.4 Updated Orchestrator instructions to reference actual tool names (`trigger-forge`, `trigger-maintainer`).
+- [x] 6.5 Schema convergence verified — `seed-landing/content/config.ts` already matches `delusionConfigSchema` (Diego fixed this).
+- [x] 6.6 Created `blocks-manifest.json` (3 blocks: Hero, Menu, Contact) + `scripts/build-block-manifest.ts` build script.
