@@ -1,4 +1,7 @@
 import { IEngramRepository } from '../../ports/engram-repository';
+import { SqliteEngramAdapter } from './sqlite-adapter';
+import { HttpEngramAdapter } from './http-adapter';
+import { StubEngramAdapter } from './stub-adapter';
 
 export type EngramMode = 'stub' | 'sqlite' | 'http' | 'mcp';
 
@@ -55,13 +58,10 @@ export function getEngramRepository(): IEngramRepository {
     // Full async creation available via createEngramRepository() for explicit control
     const mode = currentMode as EngramMode;
     if (mode === 'sqlite') {
-      const { SqliteEngramAdapter } = require('./sqlite-adapter');
       _instance = new SqliteEngramAdapter();
     } else if (mode === 'http') {
-      const { HttpEngramAdapter } = require('./http-adapter');
       _instance = new HttpEngramAdapter();
     } else {
-      const { StubEngramAdapter } = require('./stub-adapter');
       _instance = new StubEngramAdapter();
     }
     _instanceMode = currentMode;

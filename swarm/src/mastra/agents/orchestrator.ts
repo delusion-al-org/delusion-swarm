@@ -3,6 +3,7 @@ import { getModelChain } from '../lib/model-factory';
 import { fileRead, fileWrite, fileEdit, bashExec, gitOps } from '../tools/base';
 import { lookupProject } from '../tools/supabase';
 import { readContext } from '../tools/context';
+import { engramSave, engramSearch } from '../tools/engram';
 import { triggerForge, triggerMaintainer } from '../tools/workflows/trigger-workflows';
 import { echoAgent } from './echo';
 import { forgeAgent } from './forge';
@@ -33,8 +34,11 @@ For EXISTING project modifications (feature requests, bug fixes, design changes)
 2. If it does NOT exist → trigger the **forge-agency** workflow to create v1.0.
 3. If it DOES exist → read its \`.delusion/context.md\` using \`read-context\`, then trigger the **maintainer-agency** workflow.
 4. If the request is a diagnostic/test → delegate to **echo**.
+5. If a task requires repeating a complex architectural pattern, use \`engram-search\` to see if there is a "Golden Action Recipe" in the Brain.
+6. Always save significant milestones or learnings using \`engram-save\`.
 
 ## Tools at your disposal
+- **engram-save / engram-search**: Interact with the persistent Brain (memory).
 - **lookup-project**: Check Supabase if a project exists.
 - **read-context**: Read .delusion/context.md from a project to understand its state.
 - **file operations**: fileRead, fileWrite, fileEdit for direct file manipulation.
@@ -50,6 +54,6 @@ For EXISTING project modifications (feature requests, bug fixes, design changes)
 If no sub-agent matches the task, handle it directly using your tools.
 If a task requires multiple agents, coordinate them sequentially.`,
   model: getModelChain('orchestrator', 'boost'),
-  tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject, readContext, triggerForge, triggerMaintainer },
+  tools: { fileRead, fileWrite, fileEdit, bashExec, gitOps, lookupProject, readContext, triggerForge, triggerMaintainer, engramSave, engramSearch },
   agents: { echo: echoAgent },
 });

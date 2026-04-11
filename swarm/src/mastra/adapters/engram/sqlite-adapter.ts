@@ -1,5 +1,8 @@
 import { IEngramRepository, ObservationPayload, SearchParams, Observation, SaveResult } from '../../ports/engram-repository';
 
+import { join } from 'node:path';
+import * as fs from 'node:fs';
+
 /**
  * SQLite Adapter for Engram Repository
  * ─────────────────────────────────────
@@ -10,12 +13,19 @@ import { IEngramRepository, ObservationPayload, SearchParams, Observation, SaveR
  * and change the factory — zero changes to domain code required.
  */
 export class SqliteEngramAdapter implements IEngramRepository {
-  private db: import('bun:sqlite').Database;
+  private db: any;
 
   constructor(dbPath?: string) {
-    const { Database } = require('bun:sqlite');
-    const { join } = require('path');
-    const fs = require('fs');
+    let Database;
+    try {
+      Database = require('bun:sqlite').Database;
+    } catch(e) {
+      try {
+        Database = require('better-sqlite3');
+      } catch(e2) {
+        throw new Error('[SqliteEngramAdapter] Critical: Neither bun:sqlite nor better-sqlite3 found. SQLite persistence unavailable.');
+      }
+    }
 
     const path = dbPath || process.env.ENGRAM_DB_PATH || join(process.cwd(), '.engram-storage', 'engram.db');
     const dir = join(path, '..');

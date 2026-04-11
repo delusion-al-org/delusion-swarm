@@ -22,7 +22,11 @@
     "@openrouter/ai-sdk-provider": "^0.4.0",
     "@supabase/supabase-js": "^2.102.1",
     "ai": "^6.0.158",
+    "better-sqlite3": "^12.8.0",
+    "bullmq": "^5.73.4",
     "hono": "^4.12.11",
+    "ioredis": "^5.10.1",
+    "ollama-ai-provider": "^1.2.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
