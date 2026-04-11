@@ -2,38 +2,19 @@ version: '3.8'
 
 services:
   # ──────────────────────────────────────────────────────────
-  # 1. ENGRAM BRAIN (La Memoria Persistente)
-  # ──────────────────────────────────────────────────────────
-  # Corre la base de datos distribuida de memoria de los agentes.
-  # Es un stateful set crítico. Coolify debe hacer backups de esto.
-  engram-brain:
-    image: node:20-alpine # Cambiar por el Dockerfile de engram si existe
-    command: bun run start-engram-server # Reemplazar con el comando real
-    restart: unless-stopped
-    volumes:
-      - engram-data:/app/.engram-storage
-    ports:
-      - "3838:3838"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3838/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ──────────────────────────────────────────────────────────
-  # 2. MASTRA DAEMON (El Motor de los Enjambres)
+  # 1. MASTRA DAEMON (El Motor de los Enjambres)
   # ──────────────────────────────────────────────────────────
   # Corre el entorno cognitivo y de ejecución.
   # Es stateless en el proceso, pero requiere Workspaces para caching.
   mastra-swarm:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: swarm/Dockerfile
     restart: unless-stopped
     environment:
       # Network links
-      - ENGRAM_MODE=http
-      - ENGRAM_HTTP_URL=http://engram-brain:3838
+      - ENGRAM_MODE=sqlite
+      - ENGRAM_DB_PATH=/app/swarm/.engram-storage/engram.db
       - PORT=4111
       
       # Forge / Hydrator configs
@@ -53,13 +34,11 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       
     volumes:
+      - engram-data:/app/swarm/.engram-storage # Persistencia del cerebro SQLite
       - mastra-workspaces:/workspaces # Persistencia local de ASTs y Node Modules CACHE
       - /tmp/mastra-sandbox:/tmp/sandbox # Volúmen efímero opcional
     ports:
       - "4111:4111"
-    depends_on:
-      engram-brain:
-        condition: service_healthy
 
 volumes:
   engram-data:
