@@ -19,6 +19,7 @@ export class HttpEngramAdapter implements IEngramRepository {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(5000),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       const data = await res.json() as any;
@@ -37,7 +38,9 @@ export class HttpEngramAdapter implements IEngramRepository {
         ...(params.type && { type: params.type }),
         ...(params.limit !== undefined && { limit: String(params.limit) }),
       });
-      const res = await fetch(`${this.baseUrl}/api/search?${qs}`);
+      const res = await fetch(`${this.baseUrl}/api/search?${qs}`, {
+        signal: AbortSignal.timeout(5000),
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       return (await res.json()) as Observation[];
     } catch (e: any) {

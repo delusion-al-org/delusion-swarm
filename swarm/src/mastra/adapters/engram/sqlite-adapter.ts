@@ -74,8 +74,10 @@ export class SqliteEngramAdapter implements IEngramRepository {
   }
 
   async search(params: SearchParams): Promise<Observation[]> {
-    let sql = 'SELECT * FROM observations WHERE (title LIKE ? OR content LIKE ?)';
-    const args: any[] = [`%${params.query}%`, `%${params.query}%`];
+    // Escape SQLite LIKE metacharacters to prevent injection via user-controlled query
+    const escapedQuery = params.query.replace(/[%_\\]/g, '\\$&');
+    let sql = 'SELECT * FROM observations WHERE (title LIKE ? ESCAPE "\\" OR content LIKE ? ESCAPE "\\")';
+    const args: any[] = [`%${escapedQuery}%`, `%${escapedQuery}%`];
 
     if (params.project) {
       sql += ' AND project = ?';

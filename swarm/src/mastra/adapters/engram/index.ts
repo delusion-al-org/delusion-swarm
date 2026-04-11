@@ -18,22 +18,23 @@ export type EngramMode = 'stub' | 'sqlite' | 'http' | 'mcp';
  */
 
 let _instance: IEngramRepository | null = null;
+let _instanceMode: string | null = null;
 
-export function createEngramRepository(mode?: EngramMode): IEngramRepository {
+export async function createEngramRepository(mode?: EngramMode): Promise<IEngramRepository> {
   const resolvedMode = mode || (process.env.ENGRAM_MODE as EngramMode) || 'stub';
 
   switch (resolvedMode) {
     case 'sqlite': {
-      const { SqliteEngramAdapter } = require('./sqlite-adapter');
+      const { SqliteEngramAdapter } = await import('./sqlite-adapter');
       return new SqliteEngramAdapter();
     }
     case 'http': {
-      const { HttpEngramAdapter } = require('./http-adapter');
+      const { HttpEngramAdapter } = await import('./http-adapter');
       return new HttpEngramAdapter();
     }
     case 'stub':
     default: {
-      const { StubEngramAdapter } = require('./stub-adapter');
+      const { StubEngramAdapter } = await import('./stub-adapter');
       return new StubEngramAdapter();
     }
   }
@@ -44,8 +45,26 @@ export function createEngramRepository(mode?: EngramMode): IEngramRepository {
  * The domain never instantiates adapters directly.
  */
 export function getEngramRepository(): IEngramRepository {
+  const currentMode = process.env.ENGRAM_MODE || 'stub';
+  // Reset singleton if mode changed (e.g. during tests or hot reload)
+  if (_instance && _instanceMode !== currentMode) {
+    _instance = null;
+  }
   if (!_instance) {
-    _instance = createEngramRepository();
+    // Lazy-sync fallback: we create the instance synchronously using a pre-resolved adapter
+    // Full async creation available via createEngramRepository() for explicit control
+    const mode = currentMode as EngramMode;
+    if (mode === 'sqlite') {
+      const { SqliteEngramAdapter } = require('./sqlite-adapter');
+      _instance = new SqliteEngramAdapter();
+    } else if (mode === 'http') {
+      const { HttpEngramAdapter } = require('./http-adapter');
+      _instance = new HttpEngramAdapter();
+    } else {
+      const { StubEngramAdapter } = require('./stub-adapter');
+      _instance = new StubEngramAdapter();
+    }
+    _instanceMode = currentMode;
   }
   return _instance;
 }
