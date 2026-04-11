@@ -91,6 +91,8 @@ export class ProviderNotConfiguredError extends Error {
 
 const TIER_DEFAULTS: Record<Tier, { provider: string; model: string; envVar: string }[]> = {
   free: [
+    { provider: 'nvidia', model: 'meta/llama-3.1-70b-instruct', envVar: 'NVIDIA_API_KEY' },
+    { provider: 'nvidia', model: 'meta/llama-3.1-405b-instruct', envVar: 'NVIDIA_API_KEY' },
     { provider: 'openrouter', model: 'google/gemma-2-27b-it:free', envVar: 'OPENROUTER_API_KEY' },
     { provider: 'ollama', model: 'gemma2:9b', envVar: 'OLLAMA_BASE_URL' },
   ],
@@ -139,7 +141,41 @@ function createModelInstance(
     }
     case 'ollama': {
       const baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
-      return createOpenAI({ baseURL: `${baseUrl}/v1`, apiKey: 'ollama' })(model);
+      const openai = createOpenAI({ baseURL: `${baseUrl}/v1`, apiKey: 'ollama' });
+      const inst = openai(model) as any;
+      inst.specificationVersion = 'v1'; // IMP-10: Force v5 compatibility flag
+      return inst;
+    }
+    case 'nvidia': {
+      const rawKeys = process.env.NVIDIA_API_KEY || '';
+      if (!rawKeys) return null;
+      const keys = rawKeys.split(',').map(k => k.trim()).filter(Boolean);
+      if (keys.length === 0) return null;
+      
+      // Global counter for Round-Robin
+      if (!(global as any)._nvidia_key_idx) (global as any)._nvidia_key_idx = 0;
+      const selectedKey = keys[(global as any)._nvidia_key_idx % keys.length];
+      (global as any)._nvidia_key_idx++;
+      
+      const openai = createOpenAI({
+        baseURL: 'https://integrate.api.nvidia.com/v1',
+        apiKey: selectedKey,
+        compatibility: 'strict',
+      });
+
+      // Support for NVIDIA specifics like enable_thinking for Gemma-4
+      const settings = model.includes('gemma-4') 
+        ? { extraBody: { chat_template_kwargs: { enable_thinking: true } } }
+        : {};
+
+      const openai_inst = createOpenAI({
+        baseURL: 'https://integrate.api.nvidia.com/v1',
+        apiKey: selectedKey,
+        compatibility: 'compatible',
+      });
+
+      console.log(`[Registry] Instantiating NVIDIA model: ${model}`);
+      return openai_inst.chat(model);
     }
     default:
       return null;
@@ -197,6 +233,7 @@ export function getModelChain(agentName: string, defaultTier: Tier = 'free'): La
  */
 export function getConfiguredProviders(): Record<string, boolean> {
   return {
+    nvidia: !!process.env.NVIDIA_API_KEY,
     openrouter: !!process.env.OPENROUTER_API_KEY,
     anthropic: !!process.env.ANTHROPIC_API_KEY,
     openai: !!process.env.OPENAI_API_KEY,

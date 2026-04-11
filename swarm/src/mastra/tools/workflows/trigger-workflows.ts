@@ -31,7 +31,7 @@ export const triggerForge = createTool({
     try {
       console.log(`[TriggerForge] Starting forge-agency for ${context.projectId}...`);
 
-      const run = forgeWorkflow.createRun();
+      const run = await forgeWorkflow.createRun();
       const result = await run.start({
         inputData: {
           projectId: context.projectId,
@@ -86,7 +86,7 @@ export const triggerMaintainer = createTool({
     try {
       console.log(`[TriggerMaintainer] Starting maintainer-agency...`);
 
-      const run = maintainerWorkflow.createRun();
+      const run = await maintainerWorkflow.createRun();
       const result = await run.start({
         inputData: {
           featureRequest: context.featureRequest,

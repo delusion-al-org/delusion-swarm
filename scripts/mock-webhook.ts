@@ -4,7 +4,7 @@
  */
 
 async function main() {
-  const MASTRA_API_URL = process.env.MASTRA_API_URL || 'http://localhost:4111';
+  const MASTRA_API_URL = process.env.MASTRA_API_URL || 'http://localhost:4112';
 
   const mockPayload = {
     messages: [
