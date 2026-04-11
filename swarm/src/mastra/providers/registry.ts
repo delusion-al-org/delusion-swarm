@@ -157,24 +157,13 @@ function createModelInstance(
       const selectedKey = keys[(global as any)._nvidia_key_idx % keys.length];
       (global as any)._nvidia_key_idx++;
       
-      const openai = createOpenAI({
-        baseURL: 'https://integrate.api.nvidia.com/v1',
-        apiKey: selectedKey,
-        compatibility: 'strict',
-      });
-
-      // Support for NVIDIA specifics like enable_thinking for Gemma-4
-      const settings = model.includes('gemma-4') 
-        ? { extraBody: { chat_template_kwargs: { enable_thinking: true } } }
-        : {};
-
       const openai_inst = createOpenAI({
         baseURL: 'https://integrate.api.nvidia.com/v1',
         apiKey: selectedKey,
         compatibility: 'compatible',
       });
 
-      console.log(`[Registry] Instantiating NVIDIA model: ${model}`);
+      console.log(`[Registry] Instantiating NVIDIA model: ${model} (Key Index: ${(global as any)._nvidia_key_idx % keys.length})`);
       return openai_inst.chat(model);
     }
     default:

@@ -65,10 +65,31 @@ export const searchBlocks = createTool({
   }),
   execute: async (context) => {
     try {
-      // Configurable path via env var, fallback to monorepo root
-      const manifestPath = process.env.BLOCKS_MANIFEST_PATH || join(process.cwd(), '..', 'blocks-manifest.json');
+      // Robust path resolution: check relative to cwd and one level up
+      const candidates = [
+        process.env.BLOCKS_MANIFEST_PATH,
+        join(process.cwd(), 'blocks-manifest.json'),
+        join(process.cwd(), '..', 'blocks-manifest.json'),
+      ].filter(Boolean) as string[];
+
+      let raw = '';
+      let manifestPath = '';
+
+      for (const p of candidates) {
+        try {
+          raw = await readFile(p, 'utf-8');
+          manifestPath = p;
+          break;
+        } catch (e) {
+          continue;
+        }
+      }
+
+      if (!raw) {
+        throw new Error(`Could not find blocks-manifest.json in candidates: ${candidates.join(', ')}`);
+      }
       
-      const raw = await readFile(manifestPath, 'utf-8');
+      console.log(`[SearchBlocks] Using manifest at: ${manifestPath}`);
       const parsed = JSON.parse(raw);
       
       let blocks: BlockEntry[] = [];
