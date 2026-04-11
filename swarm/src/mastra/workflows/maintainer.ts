@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { plannerAgent } from '../agents/planner';
 import { coderAgent } from '../agents/coder';
 import { reviewerAgent } from '../agents/reviewer';
+import { distillerAgent } from '../agents/distiller';
+import { getEngramRepository } from '../adapters/engram';
 
 // ═══════════════════════════════════════════════════════════
 // SCHEMAS — shared between steps for type consistency
@@ -181,14 +183,43 @@ const finalizeStep = createStep({
   outputSchema: z.object({
     status: z.string(),
     summary: z.string(),
+    recipeId: z.number().optional(),
   }),
   execute: async ({ inputData }) => {
-    // TODO: Emit pub/sub event here to trigger async Judge B
-    // mastra.events.emit('workflow.approved', { diff: inputData.repoState });
+    let recipeId: number | undefined;
+
+    try {
+      console.log(`[Finalize] Distilling success for ${inputData?.projectPath || 'unknown project'}...`);
+      
+      const res = await distillerAgent.generate(
+        `Distill this successful task into a Golden Action Recipe:\n` +
+        `Feature Request: ${inputData?.checklist || 'N/A'}\n` +
+        `Feedback approved: ${inputData?.feedback || 'N/A'}\n` +
+        `Project: ${inputData?.projectPath || 'unknown'}`
+      );
+
+      const crypto = require('crypto');
+      const hash = crypto.createHash('md5').update(inputData?.checklist || '').digest('hex');
+
+      const engramRepo = getEngramRepository();
+      const saveResult = await engramRepo.save({
+        title: `Recipe: ${inputData?.checklist.substring(0, 50)}...`,
+        content: res.text,
+        type: 'recipe',
+        project: inputData?.projectPath,
+        topic_key: `recipe/${inputData?.projectPath || 'general'}/${hash}`
+      });
+      recipeId = saveResult.id;
+
+      console.log(`[Finalize] Golden Action Recipe saved with ID: ${recipeId}`);
+    } catch (e) {
+      console.warn(`[Finalize] Distillation failed (non-blocking):`, e);
+    }
 
     return {
       status: 'COMPLETED',
-      summary: `Maintainer workflow completed after ${inputData?.iteration || 1} iteration(s). Changes approved.`,
+      summary: `Maintainer workflow completed after ${inputData?.iteration || 1} iteration(s). Changes approved and distilled.`,
+      recipeId,
     };
   },
 });

@@ -1,5 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { getModelChain } from '../providers/registry';
+import { getModelChain } from '../lib/model-factory';
 
 import { memSearch } from '../tools/engram/mem-search';
 import { warnAdmins } from '../tools/admin/warn-admins';

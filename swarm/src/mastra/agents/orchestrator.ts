@@ -1,5 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { getModelChain } from '../providers/registry';
+import { getModelChain } from '../lib/model-factory';
 import { fileRead, fileWrite, fileEdit, bashExec, gitOps } from '../tools/base';
 import { lookupProject } from '../tools/supabase';
 import { readContext } from '../tools/context';
