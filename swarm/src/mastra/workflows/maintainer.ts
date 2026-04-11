@@ -8,12 +8,14 @@ import { reviewerAgent } from '../agents/reviewer';
 // SCHEMAS — shared between steps for type consistency
 // ═══════════════════════════════════════════════════════════
 
+const planOutputSchema = z.object({
   checklist: z.string(),
   containsCoreFiles: z.boolean(),
   featureRequest: z.string(),
   projectPath: z.string().optional(),
 });
 
+const codeOutputSchema = z.object({
   repoState: z.string(),
   containsCoreFiles: z.boolean(),
   iteration: z.number(),
@@ -21,6 +23,7 @@ import { reviewerAgent } from '../agents/reviewer';
   projectPath: z.string().optional(),
 });
 
+const reviewOutputSchema = z.object({
   status: z.enum(['APPROVE', 'REJECT', 'ESCALATE', 'SECURITY_HALT']),
   feedback: z.string(),
   iteration: z.number(),

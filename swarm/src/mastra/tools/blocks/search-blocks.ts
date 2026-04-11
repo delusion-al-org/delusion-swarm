@@ -52,7 +52,7 @@ export const searchBlocks = createTool({
       .string()
       .optional()
       .describe('Filter by category exact match (e.g., hero, navigation, footer)'),
-    limit: z
+    limit: z.coerce
       .number()
       .optional()
       .default(10)

@@ -75,7 +75,7 @@ export const memSearch = createTool({
     query: z.string().describe('Natural language search query'),
     project: z.string().optional().describe('Filter by project name'),
     type: z.string().optional().describe('Filter by observation type: recipe, pattern, bugfix, decision, architecture'),
-    limit: z.number().int().positive().max(20).optional().default(10).describe('Max results'),
+    limit: z.coerce.number().int().positive().max(20).optional().default(10).describe('Max results'),
   }),
   outputSchema: z.object({
     results: z.array(z.any()),

@@ -47,6 +47,7 @@ services:
       # Model Providers (Injected by Coolify Secrets)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
       
       # GitHub Eject Auth
       - GITHUB_TOKEN=${GITHUB_TOKEN}
