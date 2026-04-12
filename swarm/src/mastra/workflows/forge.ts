@@ -37,14 +37,21 @@ const generateConfigStep = createStep({
       console.warn('[ForgeWorkflow] Could not pre-fetch blocks:', e);
     }
 
-    const res = await forgeAgent.generate(
-      `Tenant ID: ${inputData.projectId}\nUser Request: ${inputData.prompt}${blocksContext}\n\nGenerate the delusion.json config obeying the schema. Output ONLY valid JSON, no markdown fences.`
-    );
+    const res = await forgeAgent.execute({
+      prompt: `Tenant ID: ${inputData.projectId}\nUser Request: ${inputData.prompt}${blocksContext}\n\nGenerate the delusion.json config obeying the schema. Output ONLY valid JSON, no markdown fences.`,
+    });
 
     let parsedConfig;
     try {
-      const text = res.text.replace(/```json/g, '').replace(/```/g, '').trim();
-      parsedConfig = JSON.parse(text);
+      const text = res.text;
+      const firstBrace = text.indexOf('{');
+      const lastBrace = text.lastIndexOf('}');
+      if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
+        console.error('[Forge] Raw response was missing brackets:', text);
+        throw new Error('No JSON object boundaries found in LLM response');
+      }
+      const rawJson = text.slice(firstBrace, lastBrace + 1);
+      parsedConfig = JSON.parse(rawJson);
     } catch (e) {
       console.warn('Forge agent did not return pure JSON. Falling back to default or escalating.', e);
       throw new Error('LLM failed to output parseable JSON config');

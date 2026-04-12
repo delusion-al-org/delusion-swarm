@@ -4,7 +4,7 @@
  */
 
 async function main() {
-  const MASTRA_API_URL = process.env.MASTRA_API_URL || 'http://localhost:4111';
+  const MASTRA_API_URL = process.env.MASTRA_API_URL || 'http://localhost:4112';
 
   const mockPayload = {
     messages: [
@@ -15,9 +15,9 @@ async function main() {
     ],
   };
 
-  console.log('🚀 Triggering Orchestrator to route to Maintainer (Phase 4.2 E2E Test)...');
+  console.log('🚀 Triggering Orchestrator asynchronously (Queue) to route to Maintainer (Phase 4.2 E2E Test)...');
   try {
-    const response = await fetch(`${MASTRA_API_URL}/api/agents/orchestrator/generate`, {
+    const response = await fetch(`${MASTRA_API_URL}/async/dispatch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,7 +33,35 @@ async function main() {
 
     const data = await response.json();
     console.log('✅ Maintainer Workflow Invocation Success!');
-    console.log(JSON.stringify(data, null, 2));
+    
+    // Format the thought process and output to a file instead of raw terminal dump
+    const fs = require('fs');
+    const path = require('path');
+    
+    const logDir = path.join(process.cwd(), 'scripts', 'logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const logFile = path.join(logDir, `maintainer-webhook-${timestamp}.log`);
+    
+    let logContent = `============= MAINTAINER WEBHOOK LOG =============\n`;
+    logContent += `TIMESTAMP: ${new Date().toISOString()}\n`;
+    logContent += `ENDPOINT: ${MASTRA_API_URL}/api/agents/orchestrator/generate\n`;
+    logContent += `=================================================\n\n`;
+    
+    logContent += `--- MAINTAINER THOUGHT PROCESS & RESPONSE ---\n`;
+    if (data.text) logContent += `${data.text}\n\n`;
+    if (data.steps) logContent += `STEPS TAKEN: ${JSON.stringify(data.steps, null, 2)}\n\n`;
+    
+    logContent += `--- RAW DATA DUMP ---\n`;
+    logContent += JSON.stringify(data, null, 2);
+    
+    fs.writeFileSync(logFile, logContent);
+    console.log(`📄 Detailed thought process and logs written to: ${logFile}`);
+    console.log(`Summary Response: ${data.text ? data.text.substring(0, 200) + '...' : 'No text response'}`);
+
   } catch (error) {
     console.error('❌ Connection error:', error);
     console.log('Ensure the Mastra daemon is running on port 4111 (bun run dev).');

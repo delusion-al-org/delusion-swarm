@@ -1,5 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { getModelChain } from '../providers/registry';
+import { getModelChain } from '../lib/model-factory';
 
 import { multiReplace } from '../tools/fs/multi-replace';
 import { bashExec, fileRead } from '../tools/base';

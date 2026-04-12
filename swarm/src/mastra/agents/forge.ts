@@ -1,5 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { getModelChain } from '../providers/registry';
+import { getModelChain } from '../lib/model-factory';
 import { searchBlocks } from '../tools/blocks';
 
 export const forgeAgent = new Agent({
