@@ -1,0 +1,22 @@
+﻿commit 9fe3ace7c24292787b4faa2096f77df4c1b304d9
+Author: Diego <diego.alfadev@gmail.com>
+Date:   Mon Apr 6 22:45:37 2026 +0200
+
+    chore: sync engram context and fix mastra build/types
+
+ .engram/chunks/4a8a4a6f.jsonl.gz       | Bin 0 -> 37674 bytes
+ .engram/manifest.json                  |  13 +
+ README.md                              |  10 +
+ bun.lock                               | 441 ++++++++++++++++++++++++++++++++-
+ swarm/package.json                     |   9 +-
+ swarm/src/mastra/providers/registry.ts |   3 +-
+ 6 files changed, 461 insertions(+), 15 deletions(-)
+
+commit e7cb617dcf601398e6d69bdb4fb10685d9c68566
+Author: Diego <diego.alfadev@gmail.com>
+Date:   Mon Apr 6 16:39:18 2026 +0200
+
+    docs: update README with monorepo structure and quick start guide
+
+ README.md | 101 ++++++++++++++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 69 insertions(+), 32 deletions(-)

@@ -1,0 +1,157 @@
+{
+  "path": "/",
+  "title": "Home",
+  "blocks": [
+    {
+      "type": "NavBar",
+      "props": {
+        "brand": "Delusion",
+        "links": [
+          { "label": "Features", "href": "#features" },
+          { "label": "Showcase", "href": "#showcase" },
+          { "label": "Stats", "href": "#stats" },
+          { "label": "Contact", "href": "#contact" }
+        ],
+        "ctaLabel": "Get Started",
+        "ctaHref": "#contact",
+        "sticky": true,
+        "showThemeToggle": true
+      }
+    },
+    {
+      "type": "HeroSection",
+      "props": {
+        "id": "hero",
+        "kicker": "Blocks-driven development",
+        "title": "Beautiful Landing Pages, Built with Blocks",
+        "subtitle": "Compose stunning, theme-agnostic pages using a library of DaisyUI-powered blocks. One JSON file. Infinite layouts.",
+        "ctaLabel": "Explore Features",
+        "ctaHref": "#features",
+        "secondaryCtaLabel": "View on GitHub",
+        "secondaryCtaHref": "https://github.com",
+        "image": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80",
+        "align": "start"
+      }
+    },
+    {
+      "type": "FeaturesSection",
+      "props": {
+        "id": "features",
+        "title": "Everything You Need",
+        "subtitle": "A complete toolkit for building beautiful, performant landing pages without writing a single line of CSS.",
+        "columns": 3,
+        "features": [
+          {
+            "icon": "🎨",
+            "title": "Theme-Agnostic",
+            "description": "Built entirely with DaisyUI semantic classes. Swap themes in one line — no color hardcoding ever."
+          },
+          {
+            "icon": "⚡",
+            "title": "Blazing Fast",
+            "description": "Astro 5 ships zero JavaScript by default. Static, optimized, and ready for production from day one."
+          },
+          {
+            "icon": "🧩",
+            "title": "Composable Blocks",
+            "description": "Each section is an independent, typed block. Mix and match in JSON — no code changes required."
+          },
+          {
+            "icon": "📱",
+            "title": "Fully Responsive",
+            "description": "Every block is mobile-first. Hamburger menus, stacked layouts, and fluid grids — all built in."
+          },
+          {
+            "icon": "🔒",
+            "title": "Type-Safe",
+            "description": "TypeScript interfaces for every block prop. Your editor catches errors before your users do."
+          },
+          {
+            "icon": "🚀",
+            "title": "Deploy Anywhere",
+            "description": "Static output means you can deploy to Cloudflare Pages, Vercel, Netlify, or a plain CDN."
+          }
+        ]
+      }
+    },
+    {
+      "type": "CarouselSection",
+      "props": {
+        "id": "showcase",
+        "title": "Block Showcase",
+        "slides": [
+          {
+            "title": "Hero Section",
+            "description": "Full-width heroes with kicker, dual CTAs, and optional image layouts.",
+            "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80"
+          },
+          {
+            "title": "Features Grid",
+            "description": "Configurable 2-4 column feature cards with icons, titles, and descriptions.",
+            "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"
+          },
+          {
+            "title": "Stats Section",
+            "description": "Horizontal stat bars that stack vertically on mobile — DaisyUI stats component.",
+            "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+          }
+        ]
+      }
+    },
+    {
+      "type": "StatsSection",
+      "props": {
+        "id": "stats",
+        "title": "Delusion by the Numbers",
+        "stats": [
+          {
+            "label": "Blocks Available",
+            "value": "7",
+            "description": "And growing every sprint"
+          },
+          {
+            "label": "Lines of Config",
+            "value": "~50",
+            "description": "To build a full landing page"
+          },
+          {
+            "label": "JS Shipped",
+            "value": "0kb",
+            "description": "Pure static by default"
+          },
+          {
+            "label": "Themes Supported",
+            "value": "∞",
+            "description": "Any DaisyUI theme works"
+          }
+        ]
+      }
+    },
+    {
+      "type": "CTASection",
+      "props": {
+        "id": "cta",
+        "title": "Ready to Build Your Landing Page?",
+        "subtitle": "Fork the seed, edit the JSON, and ship. It really is that simple.",
+        "ctaLabel": "Get in Touch",
+        "ctaHref": "#contact",
+        "secondaryCtaLabel": "Read the Docs",
+        "secondaryCtaHref": "https://github.com",
+        "variant": "primary"
+      }
+    },
+    {
+      "type": "ContactSection",
+      "props": {
+        "id": "contact",
+        "title": "Get in Touch",
+        "subtitle": "Have questions? We'd love to hear from you. Send us a message and we'll get back to you shortly.",
+        "nameLabel": "Your Name",
+        "emailLabel": "Your Email",
+        "messageLabel": "Your Message",
+        "submitLabel": "Send Message",
+        "action": "#"
+      }
+    }
+  ]
+}

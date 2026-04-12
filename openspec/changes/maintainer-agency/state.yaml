@@ -1,0 +1,10 @@
+version: 1
+status: apply
+current_phase: tasks
+progress:
+  tasks_total: 13
+  tasks_completed: 10
+artifacts:
+  - proposal.md
+  - design.md
+  - tasks.md

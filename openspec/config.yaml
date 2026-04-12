@@ -1,49 +1,49 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Mastra (TypeScript agent framework) + Astro 5 + DaisyUI + Tailwind CSS v4
-  Architecture: Agent swarm (Orchestrator + Scout/Forge/Deployer/Maintainer sub-agents)
-  UI Strategy: Hybrid — DaisyUI themes + seed templates per business type
-  Deploy: GitHub Pages (static, $0). CI: GitHub Actions
-  Backend: Supabase free tier (leads, tenants, task queue). No component configs in DB.
-  LLM: Provider-agnostic via Mastra — free default (Ollama/NIM), paid boost (Claude/OpenAI)
-  Org: delusion-al-org. Team: Diego + Miguel.
+  Project: delusion-swarm — Bun monorepo
+  SDD Scope: packages/* y seeds/* ÚNICAMENTE. swarm/ es de Miguel — NO TOCAR.
+  Stack: Astro 5 + TailwindCSS v4 + DaisyUI v5
+  Blocks: @delusion/blocks — Astro component library consumida por seeds via workspace:*
+  Content: Astro Content Collections (JSON) → BlockRenderer.astro → dynamic block rendering
+  Architecture: meta-seed pattern — JSON drives page structure, theme via daisy.json CSS vars
+  Conventions: Conventional commits, no Co-Authored-By, Bun package manager
 
-strict_tdd: false  # Will enable once Vitest is configured
+strict_tdd: false
 
 testing:
-  runner: { available: false, note: "New project — Vitest to be added in first change" }
+  note: "No test infra en packages/ ni seeds/. swarm/ tiene vitest pero está fuera del scope SDD."
+  test_runner: NOT AVAILABLE (in scope)
   layers:
     unit: { available: false }
     integration: { available: false }
     e2e: { available: false }
-  coverage: { available: false }
   quality:
-    linter: { available: false, note: "ESLint to be added" }
-    type_checker: { available: false, note: "tsc --noEmit once tsconfig exists" }
-    formatter: { available: false, note: "Prettier to be added" }
+    type_checker: { available: true, command: "cd packages/blocks && bunx tsc --noEmit" }
 
 rules:
   proposal:
-    - Include rollback plan for risky changes
-    - Identify affected modules/packages
-    - Consider cost impact (free tier vs paid providers)
+    - Scope MUST be limited to packages/* and seeds/* — never touch swarm/
+    - Identify which packages are affected (blocks, seed-landing, or both)
   specs:
     - Use Given/When/Then format for scenarios
     - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - For UI blocks: include prop schema and DaisyUI components used
   design:
-    - Include sequence diagrams for complex flows
-    - Document architecture decisions with rationale
-    - Justify provider choices with cost analysis
+    - Document architecture decisions for block API design
+    - Include prop interface definitions per block
   tasks:
-    - Group tasks by phase (infrastructure, implementation, testing)
+    - Group tasks by phase (types → component → content JSON → verification)
     - Use hierarchical numbering (1.1, 1.2, etc.)
-    - Keep tasks small enough to complete in one session
+    - One task = one block or one file
   apply:
-    - Follow existing code patterns and conventions
-    - Use DaisyUI classes over custom CSS wherever possible
+    - Follow existing .types.ts + .astro pairing pattern per block
+    - Use DaisyUI semantic classes exclusively — no raw Tailwind colors
+    - Theme must respond to daisy.json vars — no hardcoded brand colors
+    - NEVER touch swarm/ — it belongs to Miguel
   verify:
-    - Run type checker as minimum validation
-    - Compare implementation against every spec scenario
+    - Visual check: bun dev in seeds/seed-landing and inspect each block
+    - Theme check: swap daisy.json values and verify all blocks respond
+    - Type check: bunx tsc --noEmit on packages/blocks
   archive:
     - Warn before merging destructive deltas

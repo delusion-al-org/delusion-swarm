@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # ──────────────────────────────────────────────────────────
+  # 1. MASTRA DAEMON (El Motor de los Enjambres)
+  # ──────────────────────────────────────────────────────────
+  # Corre el entorno cognitivo y de ejecución.
+  # Es stateless en el proceso, pero requiere Workspaces para caching.
+  mastra-swarm:
+    build:
+      context: .
+      dockerfile: swarm/Dockerfile
+    restart: unless-stopped
+    environment:
+      # Network links
+      - ENGRAM_MODE=sqlite
+      - ENGRAM_DB_PATH=/app/swarm/.engram-storage/engram.db
+      - PORT=4111
+      
+      # Forge / Hydrator configs
+      - AGENT_WORKSPACE=/workspaces
+      - SEED_RESOLVE_MODE=npm # Fundamental para evitar FS local linkage
+      
+      # Supabase Configs
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      
+      # Model Providers (Injected by Coolify Secrets)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
+      
+      # GitHub Eject Auth
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      
+    volumes:
+      - engram-data:/app/swarm/.engram-storage # Persistencia del cerebro SQLite
+      - mastra-workspaces:/workspaces # Persistencia local de ASTs y Node Modules CACHE
+      - /tmp/mastra-sandbox:/tmp/sandbox # Volúmen efímero opcional
+    ports:
+      - "4111:4111"
+
+volumes:
+  engram-data:
+    name: engram-data
+  mastra-workspaces:
+    name: mastra-workspaces

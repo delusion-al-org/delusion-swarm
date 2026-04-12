@@ -1,0 +1,34 @@
+---
+import { getEntry } from 'astro:content';
+import { SEO } from 'astro-seo';
+import '../styles/global.css';
+
+const configEntry = await getEntry('config', 'delusion');
+const config = configEntry?.data || { site_name: "Delusion", language: "es", seo: { noindex: false } };
+
+const themeEntry = await getEntry('theme', 'daisy');
+const theme = themeEntry?.data?.theme || 'light';
+
+const { title } = Astro.props;
+const pageTitle = title ? `${title} | ${config.site_name}` : config.site_name;
+---
+<!DOCTYPE html>
+<html lang={config.language} data-theme={theme} class="scroll-smooth">
+  <head>
+    <script is:inline>
+      const t = localStorage.getItem('daisy-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <SEO
+      title={pageTitle}
+      description={config.description}
+      noindex={config.seo?.noindex}
+    />
+  </head>
+  <body class="min-h-screen bg-base-100 font-sans text-base-content antialiased">
+    <slot />
+  </body>
+</html>

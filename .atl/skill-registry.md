@@ -1,6 +1,6 @@
 # Skill Registry — delusion-swarm
 
-Generated: 2026-04-05
+Generated: 2026-04-11
 Project: delusion-al (delusion-swarm workspace)
 
 ## User Skills
@@ -25,7 +25,16 @@ None detected.
 
 ## Compact Rules
 
-### TypeScript + Mastra (applies to: src/**/*.ts)
+### Astro + DaisyUI (applies to: packages/blocks/**/*.astro, seeds/**/*.astro)
+- Block convention: `{Name}.types.ts` + `{Name}.astro` pairs in `packages/blocks/src/components/`
+- Export types from `packages/blocks/src/index.ts`
+- Register new blocks in `seeds/seed-landing/src/components/BlockRenderer.astro`
+- Add block props to `seeds/seed-landing/src/content/pages/index.json`
+- Use DaisyUI semantic classes only — NO raw Tailwind colors (bg-blue-500 → bg-primary)
+- Theme vars injected via daisy.json → Layout.astro as `--color-{key}` CSS vars
+- DaisyUI v5 uses oklch — theme values in daisy.json must be oklch strings
+
+### TypeScript + Mastra (applies to: swarm/src/**/*.ts)
 - Strict mode enabled, no unused locals/params
 - Mastra v1 subpath imports: `@mastra/core/agent`, `@mastra/core/tools`, `@mastra/core/mastra`
 - createTool execute signature: `async (context) =>` (direct input, NOT `{ context }`)

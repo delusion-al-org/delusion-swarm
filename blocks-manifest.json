@@ -1,0 +1,263 @@
+[
+  {
+    "name": "NavBar",
+    "category": "navigation",
+    "tags": ["navbar", "navigation", "header", "menu", "sticky", "mobile"],
+    "description": "Responsive navigation bar with brand, links, optional CTA, and mobile drawer. Sticky by default.",
+    "props": {
+      "brand": {
+        "type": "string",
+        "required": true,
+        "description": "Brand name or site title displayed on the left"
+      },
+      "links": {
+        "type": "NavBarLink[]",
+        "required": true,
+        "description": "Array of navigation links, each with: label (string, required), href (string, required)"
+      },
+      "ctaLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Label for the call-to-action button in the navbar"
+      },
+      "ctaHref": {
+        "type": "string",
+        "required": false,
+        "description": "URL or anchor for the CTA button"
+      },
+      "sticky": {
+        "type": "boolean",
+        "required": false,
+        "description": "Whether the navbar sticks to the top on scroll (default: true)"
+      }
+    }
+  },
+  {
+    "name": "HeroSection",
+    "category": "hero",
+    "tags": ["hero", "landing", "cta", "header", "banner", "image"],
+    "description": "Full-width hero section with kicker badge, title, subtitle, dual CTAs, and optional image layout.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "description": "Main headline text"
+      },
+      "subtitle": {
+        "type": "string",
+        "required": false,
+        "description": "Supporting text below the title"
+      },
+      "kicker": {
+        "type": "string",
+        "required": false,
+        "description": "Badge text shown above the title (e.g., 'New Release')"
+      },
+      "ctaLabel": {
+        "type": "string",
+        "required": true,
+        "description": "Text for the primary call-to-action button"
+      },
+      "ctaHref": {
+        "type": "string",
+        "required": true,
+        "description": "URL or anchor the primary CTA button links to"
+      },
+      "secondaryCtaLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Text for the secondary (outline) CTA button"
+      },
+      "secondaryCtaHref": {
+        "type": "string",
+        "required": false,
+        "description": "URL or anchor the secondary CTA button links to"
+      },
+      "image": {
+        "type": "string",
+        "required": false,
+        "description": "URL of an image to display beside the text in a two-column layout"
+      },
+      "align": {
+        "type": "'center' | 'start'",
+        "required": false,
+        "description": "Content alignment: 'center' (default) or 'start' for left-aligned with image"
+      },
+      "id": {
+        "type": "string",
+        "required": false,
+        "description": "HTML id attribute for anchor navigation"
+      }
+    }
+  },
+  {
+    "name": "FeaturesSection",
+    "category": "content",
+    "tags": ["features", "grid", "cards", "benefits", "services", "icons"],
+    "description": "Responsive feature grid with configurable columns (2-4), optional icons, titles, and descriptions.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "description": "Section heading"
+      },
+      "subtitle": {
+        "type": "string",
+        "required": false,
+        "description": "Optional supporting text below the title"
+      },
+      "features": {
+        "type": "Feature[]",
+        "required": true,
+        "description": "Array of feature items, each with: title (string, required), description (string, required), icon (string, optional)"
+      },
+      "columns": {
+        "type": "2 | 3 | 4",
+        "required": false,
+        "description": "Number of grid columns on desktop (default: 3)"
+      },
+      "id": {
+        "type": "string",
+        "required": false,
+        "description": "HTML id attribute for anchor navigation"
+      }
+    }
+  },
+  {
+    "name": "CarouselSection",
+    "category": "media",
+    "tags": ["carousel", "slider", "gallery", "images", "showcase"],
+    "description": "Image carousel with title overlays and optional descriptions on each slide.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": false,
+        "description": "Optional section heading above the carousel"
+      },
+      "slides": {
+        "type": "CarouselSlide[]",
+        "required": true,
+        "description": "Array of slides, each with: title (string, required), description (string, optional), image (string URL, required)"
+      }
+    }
+  },
+  {
+    "name": "StatsSection",
+    "category": "content",
+    "tags": ["stats", "numbers", "metrics", "kpis", "social-proof"],
+    "description": "Horizontal stats display (vertical on mobile) showing key metrics with labels, values, and optional descriptions.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": false,
+        "description": "Optional section heading above the stats"
+      },
+      "stats": {
+        "type": "Stat[]",
+        "required": true,
+        "description": "Array of stats, each with: label (string, required), value (string, required), description (string, optional)"
+      },
+      "id": {
+        "type": "string",
+        "required": false,
+        "description": "HTML id attribute for anchor navigation"
+      }
+    }
+  },
+  {
+    "name": "CTASection",
+    "category": "cta",
+    "tags": ["cta", "call-to-action", "conversion", "banner", "highlight"],
+    "description": "Full-width CTA banner with primary or neutral variant, title, subtitle, and dual action buttons.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "description": "Main CTA heading"
+      },
+      "subtitle": {
+        "type": "string",
+        "required": false,
+        "description": "Supporting text below the title"
+      },
+      "ctaLabel": {
+        "type": "string",
+        "required": true,
+        "description": "Text for the primary action button"
+      },
+      "ctaHref": {
+        "type": "string",
+        "required": true,
+        "description": "URL or anchor for the primary action"
+      },
+      "secondaryCtaLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Text for the ghost secondary action button"
+      },
+      "secondaryCtaHref": {
+        "type": "string",
+        "required": false,
+        "description": "URL or anchor for the secondary action"
+      },
+      "variant": {
+        "type": "'primary' | 'neutral'",
+        "required": false,
+        "description": "Color variant: 'primary' (default) uses bg-primary, 'neutral' uses bg-neutral"
+      },
+      "id": {
+        "type": "string",
+        "required": false,
+        "description": "HTML id attribute for anchor navigation"
+      }
+    }
+  },
+  {
+    "name": "ContactSection",
+    "category": "contact",
+    "tags": ["contact", "form", "email", "message", "reach-out"],
+    "description": "Contact form section with configurable field labels, submit text, and form action URL.",
+    "props": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "description": "Section heading (e.g., 'Get in Touch')"
+      },
+      "subtitle": {
+        "type": "string",
+        "required": false,
+        "description": "Optional supporting text below the title"
+      },
+      "nameLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Label for the name input field (default: 'Name')"
+      },
+      "emailLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Label for the email input field (default: 'Email')"
+      },
+      "messageLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Label for the message textarea (default: 'Message')"
+      },
+      "submitLabel": {
+        "type": "string",
+        "required": false,
+        "description": "Text for the submit button (default: 'Send')"
+      },
+      "action": {
+        "type": "string",
+        "required": false,
+        "description": "Form action URL (default: '#')"
+      },
+      "id": {
+        "type": "string",
+        "required": false,
+        "description": "HTML id attribute for anchor navigation"
+      }
+    }
+  }
+]

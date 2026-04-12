@@ -23,7 +23,7 @@ export const bashExec = createTool({
   description: 'Execute a shell command. Restricted to allowlisted commands in production.',
   inputSchema: z.object({
     command: z.string().describe('Shell command to execute'),
-    timeout: z.number().optional().describe('Timeout in ms (default: 30000)'),
+    timeout: z.coerce.number().optional().describe('Timeout in ms (default: 30000)'),
   }),
   outputSchema: z.object({
     stdout: z.string(),

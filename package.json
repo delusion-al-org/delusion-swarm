@@ -3,9 +3,11 @@
   "private": true,
   "workspaces": ["packages/*", "seeds/*", "swarm"],
   "scripts": {
+    "build:manifest": "bun scripts/build-block-manifest.ts",
     "publish-seed": "bun scripts/publish-seed.ts"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "yaml": "^2.8.3"
   }
 }
