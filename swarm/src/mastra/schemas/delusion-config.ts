@@ -5,7 +5,7 @@ import { z } from 'zod';
  * Each section maps to a block from @delusion/blocks.
  */
 export const sectionSchema = z.object({
-  block: z.string().describe('Block component name (e.g. "HeroSection", "MenuSection")'),
+  type: z.string().describe('Block component name (e.g. "HeroSection", "MenuSection")'),
   props: z.record(z.unknown()).describe('Props to pass to the block component'),
   order: z.number().optional().describe('Display order (lower = higher on page)'),
 });

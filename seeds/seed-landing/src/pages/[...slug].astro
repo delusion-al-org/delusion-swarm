@@ -12,7 +12,7 @@ export async function getStaticPaths() {
     const { site_name, sections } = businessEntry.data;
     const blocks = [...sections]
       .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
-      .map(({ block, props }) => ({ type: block, props }));
+      .map(({ type, props }) => ({ type, props }));
 
     return [
       {

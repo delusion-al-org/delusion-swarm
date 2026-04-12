@@ -40,7 +40,7 @@ const businessCollection = defineCollection({
       noindex: z.boolean().default(false),
     }).default({}),
     sections: z.array(z.object({
-      block: z.string(),
+      type: z.string(),
       props: z.record(z.unknown()).default({}),
       order: z.number().optional(),
     })).min(1),
