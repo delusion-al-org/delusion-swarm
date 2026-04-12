@@ -1,23 +1,41 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import BlockRenderer from "../components/BlockRenderer.astro";
 
 export async function getStaticPaths() {
+  // ── Forge mode ───────────────────────────────────────────
+  // If business/delusion.json exists (hydrated by tenant-hydrator), derive
+  // the root page from it. sections[].block → blocks[].type adapter.
+  const businessEntry = await getEntry("business", "delusion");
+  if (businessEntry) {
+    const { site_name, sections } = businessEntry.data;
+    const blocks = [...sections]
+      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+      .map(({ block, props }) => ({ type: block, props }));
+
+    return [
+      {
+        params: { slug: undefined }, // root "/"
+        props: { title: site_name, blocks },
+      },
+    ];
+  }
+
+  // ── Manual mode ───────────────────────────────────────────
+  // No business config — fall back to pages collection (showcase / dev).
   const pages = await getCollection("pages");
-  
   return pages.map((page) => {
-    // Treat "/" path specially, otherwise strip leading slash
-    const slug = page.data.path === "/" ? undefined : page.data.path.replace(/^\//, "");
+    const slug =
+      page.data.path === "/" ? undefined : page.data.path.replace(/^\//, "");
     return {
       params: { slug },
-      props: { page },
+      props: { title: page.data.title, blocks: page.data.blocks },
     };
   });
 }
 
-const { page } = Astro.props;
-const { title, blocks } = page.data;
+const { title, blocks } = Astro.props;
 ---
 
 <Layout title={title}>

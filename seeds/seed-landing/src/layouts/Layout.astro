@@ -3,17 +3,38 @@ import { getEntry } from 'astro:content';
 import { SEO } from 'astro-seo';
 import '../styles/global.css';
 
-const configEntry = await getEntry('config', 'delusion');
-const config = configEntry?.data || { site_name: "Delusion", language: "es", seo: { noindex: false } };
+// ── Forge mode: prefer business/delusion.json ────────────────────────────────
+// When the hydrator has injected a delusion.json, use its site_name + theme.
+// Falls back to the manual config/theme collections for dev/showcase mode.
+const businessEntry = await getEntry('business', 'delusion');
 
-const themeEntry = await getEntry('theme', 'daisy');
-const theme = themeEntry?.data?.theme || 'light';
+let siteName: string;
+let description: string | undefined;
+let theme: string;
+let noindex: boolean;
+
+if (businessEntry) {
+  siteName = businessEntry.data.site_name;
+  description = businessEntry.data.site_description;
+  theme = businessEntry.data.theme?.preset || 'light';
+  noindex = businessEntry.data.seo?.noindex ?? false;
+} else {
+  const configEntry = await getEntry('config', 'delusion');
+  const config = configEntry?.data || { site_name: 'Delusion', language: 'es', seo: { noindex: false } };
+  const themeEntry = await getEntry('theme', 'daisy');
+  siteName = config.site_name;
+  description = (config as any).description;
+  theme = themeEntry?.data?.theme || 'light';
+  noindex = config.seo?.noindex ?? false;
+}
 
 const { title } = Astro.props;
-const pageTitle = title ? `${title} | ${config.site_name}` : config.site_name;
+const pageTitle = title ? `${title} | ${siteName}` : siteName;
+
+const language = businessEntry?.data?.i18n_enabled ? 'en' : 'es';
 ---
 <!DOCTYPE html>
-<html lang={config.language} data-theme={theme} class="scroll-smooth">
+<html lang={language} data-theme={theme} class="scroll-smooth">
   <head>
     <script is:inline>
       const t = localStorage.getItem('daisy-theme');
@@ -24,8 +45,8 @@ const pageTitle = title ? `${title} | ${config.site_name}` : config.site_name;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <SEO
       title={pageTitle}
-      description={config.description}
-      noindex={config.seo?.noindex}
+      description={description}
+      noindex={noindex}
     />
   </head>
   <body class="min-h-screen bg-base-100 font-sans text-base-content antialiased">
