@@ -1,0 +1,65 @@
+---
+import type { NavBarProps } from './NavBar.types';
+const { brand, links, ctaLabel, ctaHref, sticky = true, showThemeToggle = false }: NavBarProps = Astro.props;
+const navbarClasses = `navbar bg-base-100 shadow-sm${sticky ? ' sticky top-0 z-30' : ''}`;
+
+const themes = [
+  'light','dark','cupcake','bumblebee','emerald','corporate','synthwave',
+  'retro','cyberpunk','valentine','halloween','garden','forest','aqua',
+  'lofi','pastel','fantasy','wireframe','black','luxury','dracula',
+  'cmyk','autumn','business','acid','lemonade','night','coffee','winter',
+  'dim','nord','sunset',
+];
+---
+<div class={navbarClasses}>
+  <div class="navbar-start">
+    <div class="dropdown">
+      <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </div>
+      <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow">
+        {links.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+        {ctaLabel && ctaHref && (
+          <li><a href={ctaHref} class="btn btn-primary btn-sm mt-2">{ctaLabel}</a></li>
+        )}
+      </ul>
+    </div>
+    <a href="/" class="text-xl font-bold ml-1">{brand}</a>
+  </div>
+  <div class="navbar-center hidden lg:flex">
+    <ul class="menu menu-horizontal px-1">
+      {links.map((link) => (
+        <li><a href={link.href}>{link.label}</a></li>
+      ))}
+    </ul>
+  </div>
+  <div class="navbar-end gap-2">
+    {showThemeToggle && (
+      <select id="theme-select" class="select select-sm select-bordered hidden lg:inline-flex" aria-label="Theme">
+        {themes.map(t => <option value={t}>{t}</option>)}
+      </select>
+    )}
+    {ctaLabel && ctaHref && (
+      <a href={ctaHref} class="btn btn-primary btn-sm">{ctaLabel}</a>
+    )}
+  </div>
+</div>
+
+{showThemeToggle && (
+  <script>
+    const select = document.getElementById('theme-select') as HTMLSelectElement | null;
+    if (select) {
+      const saved = localStorage.getItem('daisy-theme') || 'retro';
+      document.documentElement.setAttribute('data-theme', saved);
+      select.value = saved;
+      select.addEventListener('change', () => {
+        document.documentElement.setAttribute('data-theme', select.value);
+        localStorage.setItem('daisy-theme', select.value);
+      });
+    }
+  </script>
+)}

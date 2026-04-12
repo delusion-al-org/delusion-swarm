@@ -1,0 +1,26 @@
+---
+import type { CTASectionProps } from './CTASection.types';
+const {
+  title,
+  subtitle,
+  ctaLabel,
+  ctaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+  variant = 'primary',
+  id,
+}: CTASectionProps = Astro.props;
+const variantClasses = variant === 'neutral' ? 'bg-neutral text-neutral-content' : 'bg-primary text-primary-content';
+---
+<section id={id} class={`hero py-20 ${variantClasses}`}>
+  <div class="hero-content text-center flex-col">
+    <h2 class="text-4xl font-bold">{title}</h2>
+    {subtitle && <p class="max-w-xl">{subtitle}</p>}
+    <div class="flex flex-wrap justify-center gap-4 mt-4">
+      <a href={ctaHref} class="btn btn-outline btn-lg">{ctaLabel}</a>
+      {secondaryCtaLabel && secondaryCtaHref && (
+        <a href={secondaryCtaHref} class="btn btn-ghost btn-lg">{secondaryCtaLabel}</a>
+      )}
+    </div>
+  </div>
+</section>

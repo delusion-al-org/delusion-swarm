@@ -1,0 +1,29 @@
+---
+import NavBar from "@delusion/blocks/components/NavBar.astro";
+import HeroSection from "@delusion/blocks/components/HeroSection.astro";
+import FeaturesSection from "@delusion/blocks/components/FeaturesSection.astro";
+import CarouselSection from "@delusion/blocks/components/CarouselSection.astro";
+import CTASection from "@delusion/blocks/components/CTASection.astro";
+import StatsSection from "@delusion/blocks/components/StatsSection.astro";
+import ContactSection from "@delusion/blocks/components/ContactSection.astro";
+
+const blockMap: Record<string, any> = {
+  NavBar,
+  HeroSection,
+  FeaturesSection,
+  CarouselSection,
+  CTASection,
+  StatsSection,
+  ContactSection,
+};
+
+const { type, props } = Astro.props;
+const Component = blockMap[type];
+---
+{Component ? (
+  <Component {...props} />
+) : (
+  <section class="bg-error text-error-content p-8 text-center font-bold">
+    ERROR: Block '{type}' is not registered in the BlockRenderer.
+  </section>
+)}

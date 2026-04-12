@@ -1,0 +1,22 @@
+---
+import type { StatsSectionProps } from './StatsSection.types';
+const { title, stats, id }: StatsSectionProps = Astro.props;
+---
+<section id={id} class="py-16 bg-base-100">
+  <div class="container mx-auto px-4">
+    {title && (
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold">{title}</h2>
+      </div>
+    )}
+    <div class="stats stats-vertical lg:stats-horizontal shadow w-full">
+      {stats.map((stat) => (
+        <div class="stat">
+          <div class="stat-title">{stat.label}</div>
+          <div class="stat-value">{stat.value}</div>
+          {stat.description && <div class="stat-desc">{stat.description}</div>}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

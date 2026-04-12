@@ -1,6 +1,10 @@
 export interface ContactSectionProps {
-  address?: string;
-  phone?: string;
-  email?: string;
-  title?: string;
+  title: string;
+  subtitle?: string;
+  nameLabel?: string;
+  emailLabel?: string;
+  messageLabel?: string;
+  submitLabel?: string;
+  action?: string;
+  id?: string;
 }

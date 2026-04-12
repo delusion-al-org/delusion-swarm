@@ -1,12 +1,10 @@
-export interface HeroSectionProps {
+export interface CTASectionProps {
   title: string;
   subtitle?: string;
-  kicker?: string;
   ctaLabel: string;
   ctaHref: string;
   secondaryCtaLabel?: string;
   secondaryCtaHref?: string;
-  image?: string;
-  align?: 'center' | 'start';
+  variant?: 'primary' | 'neutral';
   id?: string;
 }

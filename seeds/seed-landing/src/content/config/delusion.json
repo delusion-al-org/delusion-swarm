@@ -1,0 +1,7 @@
+{
+  "site_name": "Delusion",
+  "description": "A meta-seed for beautiful, theme-agnostic landing pages.",
+  "language": "en",
+  "seo": { "noindex": false },
+  "flags": { "i18n_enabled": false }
+}

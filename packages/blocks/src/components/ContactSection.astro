@@ -1,14 +1,36 @@
 ---
 import type { ContactSectionProps } from './ContactSection.types';
-const { title = 'Contact Us', address, phone, email }: ContactSectionProps = Astro.props;
+const {
+  title,
+  subtitle,
+  nameLabel = 'Name',
+  emailLabel = 'Email',
+  messageLabel = 'Message',
+  submitLabel = 'Send',
+  action = '#',
+  id,
+}: ContactSectionProps = Astro.props;
 ---
-<section class="py-16 bg-base-200">
-  <div class="container mx-auto px-4 text-center">
-    <h2 class="text-3xl font-bold mb-8">{title}</h2>
-    <div class="flex flex-col gap-4 items-center">
-      {address && <p class="text-lg"><span class="font-semibold">Address:</span> {address}</p>}
-      {phone && <p class="text-lg"><span class="font-semibold">Phone:</span> {phone}</p>}
-      {email && <a href={`mailto:${email}`} class="link link-primary">{email}</a>}
+<section id={id} class="py-16 bg-base-200">
+  <div class="max-w-xl mx-auto px-4">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl font-bold">{title}</h2>
+      {subtitle && <p class="mt-3 text-base-content/70">{subtitle}</p>}
     </div>
+    <form action={action} method="post" class="flex flex-col gap-4">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">{nameLabel}</legend>
+        <input type="text" name="name" placeholder={nameLabel} class="input input-bordered w-full" required />
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">{emailLabel}</legend>
+        <input type="email" name="email" placeholder={emailLabel} class="input input-bordered w-full" required />
+      </fieldset>
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">{messageLabel}</legend>
+        <textarea name="message" placeholder={messageLabel} rows="5" class="textarea textarea-bordered w-full" required></textarea>
+      </fieldset>
+      <button type="submit" class="btn btn-primary w-full">{submitLabel}</button>
+    </form>
   </div>
 </section>

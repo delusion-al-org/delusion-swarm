@@ -1,0 +1,29 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import BlockRenderer from "../components/BlockRenderer.astro";
+
+export async function getStaticPaths() {
+  const pages = await getCollection("pages");
+  
+  return pages.map((page) => {
+    // Treat "/" path specially, otherwise strip leading slash
+    const slug = page.data.path === "/" ? undefined : page.data.path.replace(/^\//, "");
+    return {
+      params: { slug },
+      props: { page },
+    };
+  });
+}
+
+const { page } = Astro.props;
+const { title, blocks } = page.data;
+---
+
+<Layout title={title}>
+  <main>
+    {blocks.map((block) => (
+      <BlockRenderer type={block.type} props={block.props} />
+    ))}
+  </main>
+</Layout>
